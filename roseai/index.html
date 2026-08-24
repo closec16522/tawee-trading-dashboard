@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TAWEE JARVIS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #04050a; overflow: hidden; -webkit-font-smoothing: antialiased; }
+    input, button, select, textarea { font-family: inherit; }
+    input:focus, select:focus, textarea:focus { outline: none; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(175, 99, 99, 0.12); border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    @keyframes taweeFloat   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    @keyframes taweePulse   { 0%,100%{opacity:.45;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
+    @keyframes taweeRipple  { 0%{transform:scale(.7);opacity:.6} 100%{transform:scale(2.4);opacity:0} }
+    @keyframes taweeDots    { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+    @keyframes taweeFade    { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes splashIn    { from{opacity:0;transform:scale(1.04)} to{opacity:1;transform:scale(1)} }
+    @keyframes splashOut   { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(.96)} }
+    @keyframes splashItem  { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes scanLine    { 0%{top:-2px} 100%{top:calc(100% + 2px)} }
+    @keyframes countRing   { from{stroke-dashoffset:283} to{stroke-dashoffset:0} }
+    @keyframes aurora      { 0%{transform:translate(0,0) rotate(0deg) scale(1)} 33%{transform:translate(30px,-20px) rotate(120deg) scale(1.1)} 66%{transform:translate(-20px,10px) rotate(240deg) scale(.95)} 100%{transform:translate(0,0) rotate(360deg) scale(1)} }
+    .tawee-mini-dash:hover { border-color:rgba(255,255,255,.3); box-shadow:0 0 16px rgba(var(--accentRGB),.5); }
+    .tawee-mini-dash-menu { display:none; }
+    .tawee-mini-dash-wrap:hover .tawee-mini-dash-menu { display:flex; flex-direction:column; }
+    .tawee-dash-menu-item:hover { background:rgba(255,255,255,.07); }
+
+    /* ── Top bar ─────────────────────────────────────────── */
+    .tawee-topbar { padding: 18px 24px; gap: 12px; }
+    .tawee-brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .tawee-brand-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); animation: taweePulse 2.4s ease-in-out infinite; flex-shrink: 0; }
+    .tawee-brand-name { font-size: 20px; font-weight: 700; letter-spacing: 3px; flex-shrink: 0; }
+    .tawee-brand-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,.36); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tawee-topbar-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; position: relative; padding-bottom: 14px; margin-bottom: -14px; }
+    .tawee-menu-group { position: relative; display: flex; align-items: center; perspective: 900px; }
+    .tawee-action-group { display: flex; align-items: center; gap: 6px; }
+    .tawee-icon-btn {
+      position: relative; width: 38px; height: 38px; flex-shrink: 0; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 11px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04);
+      color: #cfd4de; font-size: 15px; line-height: 1; cursor: pointer;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      transition: background .18s ease, border-color .18s ease;
+    }
+    .tawee-icon-btn:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.2); }
+
+    /* ปุ่มเมนู ☰ ทรงกลม พรีเมียม 3D — เอฟเฟกต์เดียวกับปุ่มฮับรวมมุมขวาบน (ลูกแก้วเรืองแสง ไม่ใช่สี่เหลี่ยมเรียบ) */
+    .tawee-menu-toggle {
+      border-radius: 50%;
+      border: 1px solid rgba(var(--accentRGB),.4);
+      background:
+        radial-gradient(circle at 32% 26%, rgba(255,255,255,.22), rgba(255,255,255,0) 52%),
+        linear-gradient(160deg, rgba(22,25,34,.97), rgba(8,9,14,.98));
+      box-shadow: 0 10px 24px rgba(0,0,0,.45), 0 2px 0 rgba(255,255,255,.14) inset, 0 -7px 12px rgba(0,0,0,.4) inset, 0 0 0 1px rgba(255,255,255,.06);
+      transition: transform .22s cubic-bezier(.2,.8,.3,1.4), box-shadow .22s ease, border-color .22s ease;
+    }
+    .tawee-menu-toggle::after {
+      content: ''; position: absolute; inset: -5px; border-radius: 50%; z-index: -1; pointer-events: none;
+      background: radial-gradient(circle, rgba(var(--accentRGB),.35), rgba(var(--accentRGB),0) 70%);
+      animation: taweeHubFabGlow 3.2s ease-in-out .5s infinite;
+    }
+    .tawee-menu-toggle:hover {
+      background:
+        radial-gradient(circle at 32% 26%, rgba(255,255,255,.28), rgba(255,255,255,0) 52%),
+        linear-gradient(160deg, rgba(22,25,34,.97), rgba(8,9,14,.98));
+      border-color: var(--accent);
+      box-shadow: 0 14px 30px rgba(0,0,0,.5), 0 2px 0 rgba(255,255,255,.18) inset, 0 -7px 12px rgba(0,0,0,.4) inset, 0 0 16px rgba(var(--accentRGB),.3);
+      transform: scale(1.08);
+    }
+    .tawee-badge {
+      position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px;
+      border-radius: 8px; background: var(--accent); color: #04130c; font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; line-height: 1;
+    }
+    .tawee-badge:empty { display: none; }
+
+    /* ปุ่ม Dashboard แยกออกมาเป็นลูกแก้วของตัวเอง — ไม่ซ่อนอยู่ในดรอปดาวน์ ⚙ อีกต่อไป */
+    .tawee-dash-standalone { position: relative; }
+    .tawee-dash-toggle {
+      border-radius: 50%;
+      border: 1px solid rgba(255,180,84,.4);
+      background:
+        radial-gradient(circle at 32% 26%, rgba(255,255,255,.22), rgba(255,255,255,0) 52%),
+        linear-gradient(160deg, rgba(22,25,34,.97), rgba(8,9,14,.98));
+      box-shadow: 0 10px 24px rgba(0,0,0,.45), 0 2px 0 rgba(255,255,255,.14) inset, 0 -7px 12px rgba(0,0,0,.4) inset, 0 0 0 1px rgba(255,255,255,.06);
+      transition: transform .22s cubic-bezier(.2,.8,.3,1.4), box-shadow .22s ease, border-color .22s ease;
+    }
+    .tawee-dash-toggle::after {
+      content: ''; position: absolute; inset: -5px; border-radius: 50%; z-index: -1; pointer-events: none;
+      background: radial-gradient(circle, rgba(255,180,84,.35), rgba(255,180,84,0) 70%);
+      animation: taweeHubFabGlow 3.2s ease-in-out infinite;
+    }
+    .tawee-dash-toggle:hover {
+      border-color: rgb(255,180,84);
+      box-shadow: 0 14px 30px rgba(0,0,0,.5), 0 2px 0 rgba(255,255,255,.18) inset, 0 -7px 12px rgba(0,0,0,.4) inset, 0 0 16px rgba(255,180,84,.3);
+      transform: scale(1.08);
+    }
+    .tawee-dash-standalone-menu {
+      display: none;
+      position: absolute; top: calc(100% + 10px); right: 0; z-index: 25;
+      flex-direction: column; gap: 4px;
+      width: 180px;
+      background: linear-gradient(160deg, rgba(20,23,32,.98), rgba(8,9,14,.98));
+      border: 1px solid rgba(255,255,255,.12); border-top-color: rgba(255,255,255,.22);
+      border-radius: 16px; border-top-right-radius: 8px; padding: 6px;
+      backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%);
+      box-shadow: 0 28px 70px rgba(0,0,0,.6), 0 8px 20px rgba(0,0,0,.4), 0 0 0 1px rgba(0,0,0,.3), 0 1px 0 rgba(255,255,255,.08) inset;
+      animation: taweeMenuIn .28s cubic-bezier(.16,1.2,.3,1);
+      transform-origin: top right;
+    }
+    .tawee-dash-standalone-menu.open { display: flex; }
+    @media (hover: hover) and (pointer: fine) {
+      .tawee-dash-standalone:hover .tawee-dash-standalone-menu { display: flex; }
+    }
+
+    /* ── พื้นหลังมีมิติ: กริดจาง ๆ + ลูกแสงลอยตัวช้า ๆ ให้ความลึก ── */
+    @keyframes taweeBgGridPan { from { background-position: 0 0; } to { background-position: 64px 64px; } }
+    @keyframes taweeBgDriftA { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,-30px) scale(1.08); } }
+    @keyframes taweeBgDriftB { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-50px,25px) scale(1.05); } }
+    .tawee-bg-grid {
+      position: absolute; inset: -10%; pointer-events: none; opacity: .35;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 64px 64px;
+      animation: taweeBgGridPan 24s linear infinite;
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 78%);
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 78%);
+    }
+    .tawee-bg-orb { position: absolute; border-radius: 50%; pointer-events: none; filter: blur(60px); }
+    .tawee-bg-orb-a {
+      top: -8%; left: -6%; width: 42vmin; height: 42vmin;
+      background: radial-gradient(circle, rgba(var(--accentRGB),.22), rgba(var(--accentRGB),0) 70%);
+      animation: taweeBgDriftA 22s ease-in-out infinite;
+    }
+    .tawee-bg-orb-b {
+      bottom: -10%; right: -8%; width: 48vmin; height: 48vmin;
+      background: radial-gradient(circle, rgba(63,214,255,.14), rgba(63,214,255,0) 70%);
+      animation: taweeBgDriftB 26s ease-in-out infinite;
+    }
+
+    /* ไอคอนเมนูแบบกริดจุด 3x3 สไตล์พรีเมียม (แทนตัวอักษร ☰) */
+    .tawee-grid-icon {
+      display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+      gap: 3px; width: 15px; height: 15px;
+    }
+    .tawee-grid-icon i {
+      width: 100%; height: 100%; border-radius: 50%; background: #cfd4de;
+      transition: background .2s ease, transform .2s ease;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .tawee-menu-group:hover .tawee-grid-icon i { background: var(--accent); }
+    }
+    .tawee-topbar-actions-inner.open .tawee-grid-icon,
+    .tawee-menu-toggle:active .tawee-grid-icon { transform: scale(.92); }
+
+    /* เมนูฝั่งขวายุบไว้หลังปุ่ม ☰ เดียวเสมอ ทุกขนาดจอ — ชี้เมาส์ค้าง (desktop) หรือแตะ (มือถือ) แล้วกางเป็นรายการแบบตาราง */
+    .tawee-menu-toggle { display: flex; }
+    .tawee-topbar-actions-inner {
+      display: none;
+      position: absolute; top: calc(100% + 10px); right: 0; z-index: 25;
+      flex-direction: column; align-items: stretch; gap: 4px;
+      width: 236px; max-width: calc(100vw - 28px);
+      background: linear-gradient(160deg, rgba(20,23,32,.98), rgba(8,9,14,.98));
+      border: 1px solid rgba(255,255,255,.12); border-top-color: rgba(255,255,255,.22);
+      border-radius: 18px; border-top-right-radius: 8px; padding: 10px;
+      backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%);
+      box-shadow:
+        0 28px 70px rgba(0,0,0,.6),
+        0 8px 20px rgba(0,0,0,.4),
+        0 0 0 1px rgba(0,0,0,.3),
+        0 1px 0 rgba(255,255,255,.08) inset,
+        0 0 40px rgba(var(--accentRGB),.08);
+      animation: taweeMenuIn .28s cubic-bezier(.16,1.2,.3,1);
+      transform-origin: top right;
+      transform-style: preserve-3d;
+    }
+    @keyframes taweeMenuIn {
+      from { opacity: 0; transform: translateY(-10px) rotateX(-18deg) scale(.92); }
+      60%  { opacity: 1; }
+      to   { opacity: 1; transform: translateY(0) rotateX(0deg) scale(1); }
+    }
+    /* เมาส์จริง (desktop/trackpad) เปิดด้วยการชี้ค้าง — จอสัมผัส (มือถือ/แท็บเล็ต) เปิดด้วยการแตะเท่านั้น
+       กันปัญหา :hover ค้างบนมือถือที่ทำให้ต้องแตะ 2 ครั้งถึงจะกดเมนูข้างในได้ */
+    @media (hover: hover) and (pointer: fine) {
+      .tawee-menu-group:hover .tawee-topbar-actions-inner { display: flex; }
+    }
+    .tawee-topbar-actions-inner.open { display: flex; }
+    .tawee-menu-row {
+      position: relative;
+      display: flex; align-items: center; gap: 11px; width: 100%;
+      padding: 9px 8px; border-radius: 10px; border: none; background: transparent;
+      color: #dfe3ea; font-size: 13px; font-family: inherit; cursor: pointer; text-align: left;
+      transition: background .18s ease, transform .18s cubic-bezier(.2,.8,.3,1.3), box-shadow .18s ease;
+      opacity: 0; transform: translateX(10px);
+      animation: taweeRowIn .32s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .tawee-menu-row:nth-child(1) { animation-delay: .03s; }
+    .tawee-menu-row:nth-child(2) { animation-delay: .07s; }
+    .tawee-menu-row:nth-child(3) { animation-delay: .11s; }
+    .tawee-menu-row:nth-child(4) { animation-delay: .15s; }
+    .tawee-menu-row:nth-child(5) { animation-delay: .19s; }
+    .tawee-menu-row:nth-child(6) { animation-delay: .23s; }
+    @keyframes taweeRowIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+    .tawee-menu-row::before {
+      content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      width: 3px; height: 0; border-radius: 0 3px 3px 0; background: var(--accent);
+      box-shadow: 0 0 8px var(--accent); transition: height .18s ease;
+    }
+    .tawee-menu-row:hover {
+      background: rgba(255,255,255,.07);
+      transform: translateX(3px) scale(1.02);
+      box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    }
+    .tawee-menu-row:hover::before { height: 60%; }
+    .tawee-menu-row:active { transform: translateX(3px) scale(.98); }
+    .tawee-menu-row-icon {
+      width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(160deg, rgba(255,255,255,.1), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 2px 4px rgba(0,0,0,.3), 0 1px 0 rgba(255,255,255,.06) inset;
+      font-size: 14px; transition: transform .18s cubic-bezier(.2,.8,.3,1.3);
+    }
+    .tawee-menu-row:hover .tawee-menu-row-icon { transform: scale(1.1) rotate(-4deg); }
+    .tawee-badge-inline {
+      margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+      background: var(--accent); color: #04130c; font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+    .tawee-badge-inline:empty { display: none; }
+    .tawee-menu-arrow { margin-left: auto; color: rgba(255,255,255,.32); font-size: 11px; }
+
+    /* ── Bottom dock (กล้อง / ไมค์ / ช่องพิมพ์) ─────────────── */
+    .tawee-dock-outer { padding: 0 20px; }
+    .tawee-dock { gap: 12px; }
+    .tawee-dock-btn { width: 48px; height: 48px; font-size: 18px; }
+    .tawee-dock-mic { width: 60px; height: 60px; font-size: 22px; }
+    .tawee-dock-pill { gap: 10px; padding: 7px 8px 7px 20px; }
+    #tawee-input { padding: 8px 0; font-size: 15px; }
+    .tawee-dock-send { padding: 11px 22px; font-size: 14px; }
+
+    @media (max-width: 640px) {
+      .tawee-topbar { padding: 12px 14px; gap: 8px; }
+      .tawee-brand { gap: 8px; }
+      .tawee-brand-name { font-size: 16px; letter-spacing: 1.5px; }
+      .tawee-brand-sub { display: none; }
+
+      .tawee-dock-outer { padding: 0 10px; }
+      .tawee-dock { gap: 8px; }
+      .tawee-dock-btn { width: 38px; height: 38px; font-size: 15px; border-radius: 11px !important; }
+      .tawee-dock-mic { width: 46px; height: 46px; font-size: 18px; }
+      .tawee-dock-pill { gap: 6px; padding: 5px 5px 5px 14px; }
+      #tawee-input { padding: 6px 0; font-size: 13px; }
+      .tawee-dock-send { padding: 9px 14px; font-size: 12.5px; border-radius: 11px !important; }
+    }
+    @media (max-width: 360px) {
+      .tawee-dock-outer { padding: 0 8px; }
+      .tawee-dock-btn { width: 34px; height: 34px; font-size: 13px; }
+      .tawee-dock-mic { width: 40px; height: 40px; font-size: 16px; }
+      .tawee-dock-pill { padding: 4px 4px 4px 12px; }
+      .tawee-dock-send { padding: 8px 11px; font-size: 12px; }
+    }
+
+    /* ── ฮับรวม: แจ้งเตือนประจำวัน + to-do list + เพลง (skills/hub-panel.js) ── */
+    @keyframes taweeMusicBar { 0%,100% { height: 4px; } 50% { height: 14px; } }
+    @keyframes taweeHubFabIn { from { opacity:0; transform: rotateY(50deg) scale(.4); } to { opacity:1; transform: rotateY(0) scale(1); } }
+    @keyframes taweeHubPanelIn {
+      from { opacity:0; transform: perspective(900px) rotateX(-22deg) rotateY(16deg) translateY(-18px) scale(.8); }
+      to   { opacity:1; transform: perspective(900px) rotateX(0) rotateY(0) translateY(0) scale(1); }
+    }
+    @keyframes taweeHubSectionIn { from { opacity:0; transform: translateY(-8px) rotateX(-14deg); } to { opacity:1; transform: translateY(0) rotateX(0); } }
+    @keyframes taweeHubBadgePop { from { transform: scale(0); } to { transform: scale(1); } }
+    @keyframes taweeHubFabGlow { 0%,100% { opacity: .35; transform: scale(1); } 50% { opacity: .75; transform: scale(1.18); } }
+    #tawee-hub-fab {
+      position: relative; flex-shrink: 0; z-index: 23;
+      width: 38px; height: 38px; border-radius: 50%; cursor: pointer; padding: 0;
+      border: 1px solid rgba(var(--accentRGB),.4);
+      background:
+        radial-gradient(circle at 32% 26%, rgba(255,255,255,.22), rgba(255,255,255,0) 52%),
+        linear-gradient(160deg, rgba(22,25,34,.97), rgba(8,9,14,.98));
+      backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+      box-shadow: 0 10px 24px rgba(0,0,0,.45), 0 2px 0 rgba(255,255,255,.14) inset, 0 -7px 12px rgba(0,0,0,.4) inset, 0 0 0 1px rgba(255,255,255,.06);
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+      color: var(--accent); animation: taweeHubFabIn .4s cubic-bezier(.16,1.2,.3,1) forwards;
+      transition: transform .22s cubic-bezier(.2,.8,.3,1.4), box-shadow .22s ease, border-color .22s ease;
+      perspective: 400px;
+    }
+    #tawee-hub-fab::after {
+      content: ''; position: absolute; inset: -6px; border-radius: 50%; z-index: -1; pointer-events: none;
+      background: radial-gradient(circle, rgba(var(--accentRGB),.4), rgba(var(--accentRGB),0) 70%);
+      animation: taweeHubFabGlow 3.2s ease-in-out 1s infinite;
+    }
+    #tawee-hub-fab:hover { box-shadow: 0 18px 40px rgba(0,0,0,.55), 0 2px 0 rgba(255,255,255,.16) inset, 0 -9px 16px rgba(0,0,0,.4) inset, 0 0 20px rgba(var(--accentRGB),.35); }
+    #tawee-hub-fab.open { transform: scale(1.05) rotateY(0) !important; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accentRGB),.18), 0 18px 40px rgba(0,0,0,.55), 0 2px 0 rgba(255,255,255,.16) inset, 0 -9px 16px rgba(0,0,0,.4) inset; }
+    #tawee-hub-fab.open .tawee-hub-fab-icon { transform: rotate(90deg) scale(.9); }
+    .tawee-hub-fab-icon { transition: transform .3s cubic-bezier(.2,.8,.3,1.4); display:flex; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+    .tawee-hub-badge {
+      position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+      background: linear-gradient(155deg, #ff6a7a, #e0334c); color: #fff; font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(224,51,76,.5), 0 0 0 2px #0a0b12;
+      animation: taweeHubBadgePop .25s cubic-bezier(.2,.8,.3,1.5);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tawee-hub-dot {
+      position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 8px var(--accent), 0 0 0 2px #0a0b12; animation: taweePulse 1.6s infinite;
+    }
+    #tawee-hub-panel {
+      position: fixed; top: 68px; right: 24px; z-index: 23; width: 272px; max-width: 88vw;
+      max-height: 72vh; overflow-y: auto; display: none; flex-direction: column; gap: 10px;
+      padding: 12px; border-radius: 20px;
+      background: linear-gradient(165deg, rgba(16,18,27,.97), rgba(7,8,13,.98));
+      border: 1px solid rgba(255,255,255,.1); border-top-color: rgba(255,255,255,.22);
+      backdrop-filter: blur(26px) saturate(170%); -webkit-backdrop-filter: blur(26px) saturate(170%);
+      box-shadow: 0 30px 70px rgba(0,0,0,.6), 0 8px 24px rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.08) inset;
+      transform-origin: top right;
+    }
+    #tawee-hub-panel.open { display: flex; animation: taweeHubPanelIn .38s cubic-bezier(.16,1.1,.3,1) forwards; }
+    .tawee-hub-section {
+      border-radius: 15px;
+      background: linear-gradient(165deg, rgba(255,255,255,.055), rgba(255,255,255,.012));
+      border: 1px solid rgba(255,255,255,.08); border-top-color: rgba(255,255,255,.16);
+      box-shadow: 0 10px 22px rgba(0,0,0,.32), 0 1px 0 rgba(255,255,255,.05) inset;
+      overflow: hidden; animation: taweeHubSectionIn .34s cubic-bezier(.16,1,.3,1) both;
+      transition: box-shadow .2s ease, transform .2s cubic-bezier(.2,.8,.3,1.3);
+    }
+    .tawee-hub-section:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.08) inset; }
+    .tawee-hub-section:nth-child(1) { animation-delay: .04s; }
+    .tawee-hub-section:nth-child(2) { animation-delay: .09s; }
+    .tawee-hub-section:nth-child(3) { animation-delay: .14s; }
+    .tawee-hub-section-head {
+      display: flex; align-items: center; gap: 9px; padding: 10px 11px; cursor: pointer; user-select: none;
+      transition: background .15s ease;
+    }
+    .tawee-hub-section-head:hover { background: rgba(255,255,255,.04); }
+    .tawee-hub-section-title { flex: 1; font-size: 12.5px; font-weight: 600; color: #eef1f6; }
+    .tawee-hub-section-count {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent);
+      background: linear-gradient(155deg, rgba(var(--accentRGB),.3), rgba(var(--accentRGB),.12));
+      box-shadow: 0 2px 6px rgba(var(--accentRGB),.2), 0 1px 0 rgba(255,255,255,.14) inset;
+      border-radius: 8px; padding: 1px 7px; min-width: 18px; text-align: center;
+    }
+    /* ── ไอคอนหัวข้อทรงกลม 3D — SVG เส้นสีขาวลอยบนพื้นลูกแก้วไล่เฉด + shimmer กวาดผ่านเป็นระยะ ── */
+    @keyframes taweeHubShimmer { 0%,20% { transform: translateX(-120%) rotate(20deg); } 55%,100% { transform: translateX(160%) rotate(20deg); } }
+    .tawee-hub-icon-badge {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .tawee-hub-icon-badge svg { position: relative; z-index: 2; color: #fff; filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
+    .tawee-hub-icon-badge::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; z-index: 1;
+      background: radial-gradient(circle at 30% 24%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%);
+    }
+    .tawee-hub-icon-badge::after {
+      content: ''; position: absolute; top: -40%; bottom: -40%; left: -20%; width: 30%; z-index: 3; pointer-events: none;
+      background: linear-gradient(100deg, rgba(255,255,255,0), rgba(255,255,255,.65), rgba(255,255,255,0));
+      animation: taweeHubShimmer 5s ease-in-out infinite;
+    }
+    .tawee-hub-icon-badge.reminders {
+      background: radial-gradient(circle at 32% 26%, #ffe1a0, #e8a934 55%, #a8721a);
+      box-shadow: 0 3px 9px rgba(224,167,46,.5), 0 1px 0 rgba(255,255,255,.3) inset, 0 -3px 6px rgba(0,0,0,.35) inset;
+    }
+    .tawee-hub-icon-badge.tasks {
+      background: radial-gradient(circle at 32% 26%, #a4ffce, #22c672 55%, #0f7a45);
+      box-shadow: 0 3px 9px rgba(34,198,114,.5), 0 1px 0 rgba(255,255,255,.3) inset, 0 -3px 6px rgba(0,0,0,.35) inset;
+    }
+    .tawee-hub-icon-badge.music {
+      background: radial-gradient(circle at 32% 26%, #fff, rgba(var(--accentRGB),1) 55%, rgba(var(--accentRGB),.55));
+      box-shadow: 0 3px 9px rgba(var(--accentRGB),.5), 0 1px 0 rgba(255,255,255,.3) inset, 0 -3px 6px rgba(0,0,0,.35) inset;
+    }
+    .tawee-hub-icon-badge.tasks::after { animation-delay: .8s; }
+    .tawee-hub-icon-badge.music::after { animation-delay: 1.6s; }
+    .tawee-hub-chevron { font-size: 11px; color: rgba(255,255,255,.4); transition: transform .3s cubic-bezier(.2,.8,.3,1.4); transform-origin: center; }
+    .tawee-hub-section.collapsed .tawee-hub-chevron { transform: rotate(-90deg); }
+    .tawee-hub-section-body {
+      overflow: hidden; transition: max-height .38s cubic-bezier(.4,0,.2,1), opacity .3s ease;
+      max-height: 600px; opacity: 1;
+    }
+    .tawee-hub-section-body-inner {
+      padding: 0 10px 10px; display: flex; flex-direction: column; gap: 6px;
+      transform-origin: top; transition: transform .32s cubic-bezier(.4,0,.2,1);
+      perspective: 600px;
+    }
+    .tawee-hub-section.collapsed .tawee-hub-section-body { max-height: 0; opacity: 0; }
+    .tawee-hub-section.collapsed .tawee-hub-section-body-inner { transform: rotateX(-25deg); }
+    /* mini music player ในฮับ */
+    .tawee-hub-music-row { display: flex; align-items: center; gap: 7px; padding: 2px 0 4px; }
+    .tawee-hub-music-btn {
+      width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(155deg, rgba(255,255,255,.09), rgba(255,255,255,.02));
+      box-shadow: 0 3px 8px rgba(0,0,0,.3), 0 1px 0 rgba(255,255,255,.1) inset;
+      color: #dfe3ea; font-size: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s cubic-bezier(.2,.8,.3,1.4), background .15s ease, box-shadow .15s ease;
+    }
+    .tawee-hub-music-btn:hover { background: rgba(255,255,255,.14); transform: scale(1.12); box-shadow: 0 4px 12px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.14) inset; }
+    .tawee-hub-music-btn--main {
+      width: 36px; height: 36px; font-size: 14px; color: #04130c;
+      background: radial-gradient(circle at 32% 26%, rgba(255,255,255,.4), rgba(255,255,255,0) 55%), linear-gradient(155deg, var(--accent), var(--accent2));
+      border: none;
+      box-shadow: 0 5px 14px rgba(var(--accentRGB),.5), 0 -3px 6px rgba(0,0,0,.2) inset;
+    }
+    .tawee-hub-music-info { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+    .tawee-hub-music-name { font-size: 11px; color: #dfe3ea; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tawee-hub-music-viz { display: flex; align-items: flex-end; gap: 2px; height: 13px; flex-shrink: 0; }
+    .tawee-hub-music-viz span { width: 3px; border-radius: 2px; background: var(--accent); height: 4px; opacity: .5; transition: opacity .2s; }
+    .tawee-hub-music-row.playing .tawee-hub-music-viz span { opacity: 1; animation: taweeMusicBar .9s ease-in-out infinite; }
+    .tawee-hub-music-row.playing .tawee-hub-music-viz span:nth-child(1) { animation-delay: -.6s; }
+    .tawee-hub-music-row.playing .tawee-hub-music-viz span:nth-child(2) { animation-delay: -.3s; }
+    .tawee-hub-music-row.playing .tawee-hub-music-viz span:nth-child(3) { animation-delay: -.9s; }
+    .tawee-hub-music-row.playing .tawee-hub-music-viz span:nth-child(4) { animation-delay: -.15s; }
+    @media (max-width: 640px) {
+      #tawee-hub-fab { top: 78px; right: 14px; width: 46px; height: 46px; font-size: 18px; }
+      #tawee-hub-panel { top: 66px; right: 14px; width: 250px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     SPLASH SCREEN
+═══════════════════════════════════════════════════════════ -->
+<div id="tawee-splash" style="position:fixed;inset:0;z-index:100;background:#04050a;animation:splashIn .6s ease;overflow:hidden;">
+
+  <!-- Aurora BG layers -->
+  <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
+    <div style="position:absolute;width:800px;height:800px;top:-200px;left:-200px;border-radius:50%;background:radial-gradient(circle,rgba(15,174,125,.12) 0%,transparent 70%);animation:aurora 18s ease-in-out infinite;filter:blur(60px);"></div>
+    <div style="position:absolute;width:600px;height:600px;bottom:-100px;right:-100px;border-radius:50%;background:radial-gradient(circle,rgba(6,92,64,.08) 0%,transparent 70%);animation:aurora 22s ease-in-out infinite reverse;filter:blur(50px);"></div>
+    <div style="position:absolute;width:400px;height:400px;top:30%;left:60%;border-radius:50%;background:radial-gradient(circle,rgba(201,107,255,.06) 0%,transparent 70%);animation:aurora 15s ease-in-out infinite 3s;filter:blur(40px);"></div>
+  </div>
+
+  <!-- Scan line effect -->
+  <div style="position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(15,174,125,.25),transparent);animation:scanLine 4s linear infinite;pointer-events:none;z-index:1;"></div>
+
+  <!-- Splash canvas (particle field) -->
+  <canvas id="tawee-splash-canvas" style="position:absolute;inset:0;width:100%;height:100%;opacity:.35;pointer-events:none;"></canvas>
+
+  <!-- Center content -->
+  <div style="position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:24px;">
+
+    <!-- TAWEE logo row -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:36px;animation:splashItem .6s .1s ease both;">
+      <span style="width:9px;height:9px;border-radius:50%;background:var(--accent,#0FAE7D);box-shadow:0 0 16px var(--accent,#0FAE7D);animation:taweePulse 2.2s ease-in-out infinite;flex-shrink:0;"></span>
+      <span style="font-size:28px;font-weight:700;letter-spacing:5px;color:#fff;">TAWEE</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase;margin-left:2px;">JARVIS OS</span>
+    </div>
+
+    <!-- Main card -->
+    <div id="tawee-splash-card" style="width:min(520px,94vw);border-radius:28px;background:rgba(10,12,20,.78);border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 80px rgba(15,174,125,.08);overflow:hidden;animation:splashItem .7s .2s ease both;">
+
+      <!-- top accent bar -->
+      <div id="tawee-splash-bar" style="height:3px;background:linear-gradient(90deg,#0FAE7D,#065C40);"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:280px;">
+
+        <!-- LEFT: Temperature gauge canvas -->
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px 24px;border-right:1px solid rgba(255,255,255,.06);">
+          <canvas id="tawee-splash-gauge" width="200" height="180" style="display:block;filter:drop-shadow(0 0 18px rgba(15,174,125,.4));"></canvas>
+          <div style="margin-top:10px;text-align:center;">
+            <div id="tawee-splash-comfort" style="font-size:13px;color:rgba(255,255,255,.55);letter-spacing:.5px;">กำลังวัด…</div>
+            <div style="margin-top:5px;font-size:11px;color:rgba(255,255,255,.28);font-family:'JetBrains Mono',monospace;letter-spacing:1px;">ห้องนั่งเล่น</div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Clock + info -->
+        <div style="display:flex;flex-direction:column;justify-content:space-between;padding:24px 22px 20px;">
+
+          <!-- Clock -->
+          <div style="text-align:center;">
+            <div id="tawee-splash-time" style="font-family:'JetBrains Mono',monospace;font-size:40px;font-weight:700;color:#fff;letter-spacing:-1px;line-height:1;"></div>
+            <div id="tawee-splash-date" style="margin-top:7px;font-size:12px;color:rgba(255,255,255,.40);letter-spacing:.5px;line-height:1.5;"></div>
+          </div>
+
+          <!-- Divider -->
+          <div style="height:1px;background:rgba(255,255,255,.06);margin:16px 0;"></div>
+
+          <!-- Stats mini -->
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div id="tawee-splash-outdoor" style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;">
+              <span style="color:rgba(255,255,255,.42);">🌡 ภายนอก</span>
+              <span style="font-family:'JetBrains Mono',monospace;color:#ffb454;font-size:13px;">—</span>
+            </div>
+            <div id="tawee-splash-humidity" style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;">
+              <span style="color:rgba(255,255,255,.42);">💧 ความชื้น</span>
+              <span style="font-family:'JetBrains Mono',monospace;color:#60d4ff;font-size:13px;">—</span>
+            </div>
+            <div id="tawee-splash-status" style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;">
+              <span style="color:rgba(255,255,255,.42);">✅ สถานะ</span>
+              <span style="font-family:'JetBrains Mono',monospace;color:var(--accent,#0FAE7D);font-size:11px;">กำลังโหลด…</span>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div style="height:1px;background:rgba(255,255,255,.06);margin:14px 0 16px;"></div>
+
+          <!-- Enter button with countdown ring -->
+          <button id="tawee-splash-btn" onclick="TAWEE.dismissSplash()" style="position:relative;width:100%;padding:13px;border-radius:14px;border:none;background:var(--accent,#0FAE7D);color:#04130c;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:8px;overflow:hidden;transition:filter .2s;">
+            <svg id="tawee-splash-ring" width="22" height="22" style="flex-shrink:0;transform:rotate(-90deg);">
+              <circle cx="11" cy="11" r="9" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
+              <circle id="tawee-splash-ring-fg" cx="11" cy="11" r="9" fill="none" stroke="#04130c" stroke-width="2" stroke-linecap="round" stroke-dasharray="56.5" stroke-dashoffset="56.5" style="transition:stroke-dashoffset .9s linear;"/>
+            </svg>
+            <span id="tawee-splash-btn-text">เข้าใช้งาน TAWEE</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom tagline -->
+    <div style="margin-top:24px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.18);text-transform:uppercase;animation:splashItem .7s .4s ease both;">
+      
+    </div>
+  </div>
+</div>
+
+<!-- ROOT -->
+<div id="tawee-root" style="position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#04050a;color:#e8ebf2;font-family:'Space Grotesk','IBM Plex Sans Thai',sans-serif;--accent:#35f0a0;--accent2:#19d6c9;--accentRGB:15,174,125;">
+
+  <!-- BG layers -->
+  <div class="tawee-bg-grid"></div>
+  <div class="tawee-bg-orb tawee-bg-orb-a"></div>
+  <div class="tawee-bg-orb tawee-bg-orb-b"></div>
+  <canvas id="tawee-bg-anim-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+  <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 36%,rgba(var(--accentRGB),.15) 0,transparent 55%);pointer-events:none;transition:background .7s;"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(circle at 82% 88%,rgba(var(--accentRGB),.06) 0,transparent 50%);pointer-events:none;"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 38%,rgba(0,0,0,.62) 100%);pointer-events:none;"></div>
+
+  <!-- TOP BAR -->
+  <div class="tawee-topbar" style="position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;">
+    
+      <!-- Back button to trading dashboard -->
+      <a href="../index.html" style="text-decoration:none;">
+        <button class="tawee-icon-btn" title="Back to Trading Dashboard" style="font-family:'Space Grotesk',sans-serif;font-size:12px;padding:0 12px;width:auto;gap:6px;margin-right:12px;">
+          <span style="font-size:16px;">⏴</span> Dashboard
+        </button>
+      </a>
+    <div class="tawee-brand">
+      <span class="tawee-brand-dot"></span>
+      <span class="tawee-brand-name">TAWEE AI</span>
+      <span class="tawee-brand-sub"></span>
+    </div>
+    <div class="tawee-topbar-actions">
+      <!-- ซ่อนไว้ก่อนตามคำขอ (ไม่ได้ลบ TAWEE.hub ทิ้ง เอากลับมาแค่ลบ display:none) -->
+      <button id="tawee-hub-fab" title="แจ้งเตือน / งาน / เพลง" onclick="TAWEE.hub.toggle()" style="display:none;">
+        <span class="tawee-hub-fab-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="2.4" fill="currentColor"/>
+            <ellipse cx="12" cy="12" rx="10" ry="4" stroke="currentColor" stroke-width="1.5" transform="rotate(-25 12 12)"/>
+            <ellipse cx="12" cy="12" rx="10" ry="4" stroke="currentColor" stroke-width="1.1" opacity=".55" transform="rotate(35 12 12)"/>
+          </svg>
+        </span>
+      </button>
+      <div class="tawee-dash-standalone" id="tawee-dash-standalone">
+        <button class="tawee-icon-btn tawee-dash-toggle" onclick="taweeToggleDash(event)" title="Dashboard">
+          <canvas id="tawee-dash-mini" style="display:block;width:20px;height:20px;"></canvas>
+        </button>
+        <div class="tawee-dash-standalone-menu" id="tawee-dash-standalone-menu">
+          <button onclick="window.location.href='../index.html'" class="tawee-dash-menu-item" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;border:1px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.1);color:#10b981;font-size:12.5px;cursor:pointer;text-align:left;margin-bottom:4px;">
+            <span style="width:26px;height:26px;border-radius:8px;background:rgba(16,185,129,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              📈
+            </span>
+            <span style="font-weight:600;">Trading Dashboard</span>
+          </button>
+          <button onclick="TAWEE.openDashboard('post')" class="tawee-dash-menu-item" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;border:none;background:transparent;color:#dfe3ea;font-size:12.5px;cursor:pointer;text-align:left;">
+            <span style="width:26px;height:26px;border-radius:8px;background:rgba(63,214,255,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <canvas id="tawee-dash-icon-post" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas>
+            </span>
+            <span>Smart Office</span>
+          </button>
+          <button onclick="TAWEE.openDashboard('finance')" class="tawee-dash-menu-item" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;border:none;background:transparent;color:#dfe3ea;font-size:12.5px;cursor:pointer;text-align:left;">
+            <span style="width:26px;height:26px;border-radius:8px;background:rgba(255,180,84,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <canvas id="tawee-dash-icon-finance" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas>
+            </span>
+            <span>Smart Money</span>
+          </button>
+        </div>
+      </div>
+      <div class="tawee-menu-group">
+        <button class="tawee-icon-btn tawee-menu-toggle" onclick="taweeToggleMenu()" title="เมนู">
+          <span class="tawee-grid-icon"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        </button>
+        <div id="tawee-theme-dots" style="display:none;"></div>
+        <div class="tawee-topbar-actions-inner" id="tawee-topbar-actions-inner">
+          <button class="tawee-menu-row" onclick="TAWEE.showTemperatureModal()">
+            <span class="tawee-menu-row-icon">🌡</span><span>อุณหภูมิห้อง</span>
+          </button>
+          <button class="tawee-menu-row" onclick="TAWEE.openPanel('avatars')">
+            <span class="tawee-menu-row-icon">👤</span><span>อวตาร</span>
+          </button>
+          <button class="tawee-menu-row" onclick="TAWEE.openPanel('background')">
+            <span class="tawee-menu-row-icon">✦</span><span>พื้นหลัง</span>
+          </button>
+          <button class="tawee-menu-row" onclick="TAWEE.openPanel('feed')">
+            <span class="tawee-menu-row-icon">💬</span><span>บทสนทนา</span><span id="tawee-msg-count" class="tawee-badge-inline"></span>
+          </button>
+          <button class="tawee-menu-row" onclick="TAWEE.openPanel('settings')">
+            <span class="tawee-menu-row-icon">⚙</span><span>ตั้งค่า</span>
+          </button>
+          <button class="tawee-menu-row" onclick="TAWEE.toggleFullscreen()">
+            <span class="tawee-menu-row-icon">⛶</span><span>เต็มจอ</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function taweeToggleMenu() {
+      document.getElementById('tawee-topbar-actions-inner').classList.toggle('open');
+    }
+    function taweeToggleDash(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('tawee-dash-standalone-menu').classList.toggle('open');
+    }
+    // แตะที่อื่นนอกเมนู (สำคัญบนมือถือ ที่ไม่มี hover ให้ปิดเมนูอัตโนมัติ)
+    document.addEventListener('click', (e) => {
+      const actions = document.querySelector('.tawee-menu-group');
+      const inner = document.getElementById('tawee-topbar-actions-inner');
+      if (inner.classList.contains('open') && actions && !actions.contains(e.target)) {
+        inner.classList.remove('open');
+      }
+      const dashWrap = document.getElementById('tawee-dash-standalone');
+      const dashMenu = document.getElementById('tawee-dash-standalone-menu');
+      if (dashMenu.classList.contains('open') && dashWrap && !dashWrap.contains(e.target)) {
+        dashMenu.classList.remove('open');
+      }
+    });
+  </script>
+
+  <!-- AVATAR STAGE -->
+  <div ondblclick="TAWEE.toggleFullscreen()" title="ดับเบิลคลิกเพื่อเต็มจอ" style="position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding-bottom:60px;cursor:pointer;">
+    <div style="position:relative;width:min(72vmin,560px);height:min(72vmin,560px);animation:taweeFloat 7s ease-in-out infinite;">
+      <canvas id="tawee-canvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+    </div>
+    <div style="margin-top:-10px;display:flex;flex-direction:column;align-items:center;gap:11px;text-align:center;max-width:560px;padding:0 24px;">
+      <div style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;">
+        <span id="tawee-status-dot" style="width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);flex-shrink:0;transition:all .3s;"></span>
+        <span id="tawee-status">กำลังโหลด…</span>
+      </div>
+      <div id="tawee-mic-ripple" style="display:none;position:relative;width:0;height:0;">
+        <span style="position:absolute;top:-24px;left:-24px;width:48px;height:48px;border-radius:50%;border:1px solid var(--accent);animation:taweeRipple 1.4s ease-out infinite;"></span>
+        <span style="position:absolute;top:-24px;left:-24px;width:48px;height:48px;border-radius:50%;border:1px solid var(--accent);animation:taweeRipple 1.4s ease-out infinite .6s;"></span>
+      </div>
+      <div id="tawee-caption" style="font-size:15.5px;line-height:1.65;color:rgba(255,255,255,.76);font-weight:300;animation:taweeFade .4s ease;max-width:480px;"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM DOCK -->
+  <div class="tawee-dock-outer" style="position:absolute;bottom:24px;left:0;right:0;z-index:20;display:flex;justify-content:center;">
+    <div class="tawee-dock" style="display:flex;align-items:center;width:100%;max-width:700px;">
+      <button id="tawee-cam-btn" class="tawee-dock-btn" onclick="TAWEE.toggleCamera()" title="เปิด/ปิดกล้อง" style="flex-shrink:0;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#dfe3ea;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:all .25s;">📷</button>
+      <button id="tawee-mic" class="tawee-dock-btn tawee-dock-mic" onclick="TAWEE.micClick()" title="กดเพื่อพูด" style="flex-shrink:0;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#dfe3ea;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:all .25s;box-shadow:0 10px 30px rgba(0,0,0,.4);">🎙</button>
+      <div class="tawee-dock-pill" style="flex:1;min-width:0;display:flex;align-items:center;border-radius:18px;background:rgba(14,16,24,.68);border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);box-shadow:0 18px 50px rgba(0,0,0,.5);">
+        <input id="tawee-input" type="text" placeholder="พิมพ์ข้อความ…"
+          oninput="TAWEE.setInput(this.value)" onkeydown="TAWEE.onKeyDown(event)"
+          style="flex:1;min-width:0;background:transparent;border:none;color:#eef1f6;font-family:inherit;">
+        <button class="tawee-dock-send" onclick="TAWEE.send()" style="flex-shrink:0;border-radius:13px;border:none;background:var(--accent);color:#04130c;font-weight:600;cursor:pointer;transition:filter .2s;">ส่ง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HUB ฮับรวม: แจ้งเตือนประจำวัน + to-do list + เพลง (skills/hub-panel.js) -->
+  <div id="tawee-hub-panel"></div>
+
+  <!-- CAMERA PANEL -->
+  <div id="tawee-cam-panel" style="display:none;position:absolute;bottom:108px;right:24px;z-index:25;border-radius:18px;overflow:hidden;border:1px solid rgba(var(--accentRGB),.55);box-shadow:0 0 36px rgba(var(--accentRGB),.22),0 22px 60px rgba(0,0,0,.65);transition:all .35s;">
+    <video id="tawee-video" autoplay playsinline muted style="width:220px;height:165px;display:block;transform:scaleX(-1);background:#000;object-fit:cover;"></video>
+    <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:linear-gradient(to bottom,rgba(0,0,0,.75),transparent);">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:taweePulse 2s infinite;"></span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;">LIVE</span>
+      </div>
+      <button onclick="TAWEE.toggleCamera()" style="width:22px;height:22px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:11px;cursor:pointer;">✕</button>
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 10px 9px;background:linear-gradient(to top,rgba(0,0,0,.82),transparent);display:flex;gap:6px;justify-content:center;">
+      <button onclick="TAWEE.sendCameraFrame()" style="flex:1;padding:6px 10px;border-radius:9px;border:none;background:var(--accent);color:#04130c;font-size:11px;font-weight:700;cursor:pointer;">ส่งให้ TAWEE ดู</button>
+      <button onclick="TAWEE.snapAndAsk()" style="flex:1;padding:6px 10px;border-radius:9px;border:1px solid rgba(var(--accentRGB),.55);background:rgba(var(--accentRGB),.10);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;">ถามพร้อมภาพ</button>
+    </div>
+  </div>
+
+  <!-- SCRIM -->
+  <div id="tawee-scrim" onclick="TAWEE.closePanel()" style="display:none;position:absolute;inset:0;z-index:30;background:rgba(2,3,8,.58);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);animation:taweeFade .3s ease;"></div>
+
+  <!-- SETTINGS PANEL (left) -->
+  <div id="tawee-settings" style="position:absolute;top:0;left:0;bottom:0;z-index:40;width:min(390px,90vw);transform:translateX(-105%);transition:transform .42s cubic-bezier(.22,1,.36,1);background:rgba(10,12,20,.88);backdrop-filter:blur(30px) saturate(150%);-webkit-backdrop-filter:blur(30px) saturate(150%);border-right:1px solid rgba(255,255,255,.07);box-shadow:30px 0 80px rgba(0,0,0,.5);display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 24px 16px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);">◆ ตั้งค่า</span>
+      <button onclick="TAWEE.closePanel()" style="width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#9aa2b1;font-size:15px;cursor:pointer;">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:6px 24px 30px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.38);margin:20px 0 11px;">◆ Claude API Key</div>
+      <input id="tawee-key-input" type="password" placeholder="sk-ant-…" oninput="TAWEE.onKeyInput(this.value)" style="width:100%;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#eef1f6;font-size:13px;font-family:'JetBrains Mono',monospace;">
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="TAWEE.saveApiKey()" style="flex:1;padding:11px;border-radius:11px;border:none;background:var(--accent);color:#04130c;font-weight:600;font-size:13px;cursor:pointer;">บันทึก Key</button>
+        <button onclick="TAWEE.clearApiKey()" style="padding:11px 18px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#c2c8d4;font-size:13px;cursor:pointer;">ลบ</button>
+      </div>
+      <div id="tawee-key-saved" style="display:none;margin-top:9px;font-size:12px;color:var(--accent);">✓ บันทึก Key แล้ว</div>
+      <div style="margin-top:10px;font-size:11px;line-height:1.65;color:rgba(255,255,255,.36);">Key เก็บใน localStorage เท่านั้น — <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent);">ขอ key ที่นี่</a></div>
+      
+      <div style="height:1px;background:rgba(255,255,255,.07);margin:22px 0;"></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.38);margin:20px 0 11px;">◆ Gemini API Key</div>
+      <input id="tawee-gemini-input" type="password" placeholder="AIzaSy..." oninput="TAWEE.onGeminiKeyInput(this.value)" style="width:100%;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#eef1f6;font-size:13px;font-family:'JetBrains Mono',monospace;">
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="TAWEE.saveGeminiKey()" style="flex:1;padding:11px;border-radius:11px;border:none;background:var(--accent);color:#04130c;font-weight:600;font-size:13px;cursor:pointer;">บันทึก Key</button>
+        <button onclick="TAWEE.clearGeminiKey()" style="padding:11px 18px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#c2c8d4;font-size:13px;cursor:pointer;">ลบ</button>
+      </div>
+      <div id="tawee-gemini-saved" style="display:none;margin-top:9px;font-size:12px;color:var(--accent);">✓ บันทึก Key แล้ว</div>
+      <div style="margin-top:10px;font-size:11px;line-height:1.65;color:rgba(255,255,255,.36);">Key เก็บใน localStorage เท่านั้น — <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);">ขอ key ที่นี่</a></div>
+<!-- ตัดส่วน Cloudflare Worker Proxy ออกจาก UI รุ่นแจกนักเรียน (v1) — ไม่มี Worker/SETUP.md คู่กันในแพ็กเกจนี้ ฟังก์ชัน JS (saveProxyConfig ฯลฯ) ยังอยู่เผื่อรุ่น 2 เอากลับมาใช้ -->
+      <div style="height:1px;background:rgba(255,255,255,.07);margin:22px 0;"></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:12px;">◆ เสียง</div>
+      <div style="font-size:13px;color:#b9c0cd;margin-bottom:10px;">เสียง TTS: <span id="tawee-tts-name" style="color:var(--accent);"></span></div>
+      <button id="tawee-speak-toggle" onclick="TAWEE.toggleSpeak()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#dfe3ea;font-size:13px;cursor:pointer;">
+        <span>พูดคำตอบออกเสียง</span>
+        <span style="width:42px;height:24px;border-radius:13px;position:relative;flex-shrink:0;transition:background .25s;">
+          <span class="knob" style="position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .25s;left:3px;"></span>
+        </span>
+      </button>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin:22px 0;"></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:12px;">◆ โมเดล AI</div>
+      <select id="tawee-model-select" onchange="TAWEE.setModel(this.value)" style="width:100%;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#eef1f6;font-size:13px;cursor:pointer;">
+        <option value="claude-sonnet-4-5-20250929" style="background:#12141c;">Claude Sonnet 4.5 (แนะนำ)</option>
+        <option value="claude-opus-4-1-20250805"   style="background:#12141c;">Claude Opus 4.1 (ฉลาดสุด)</option>
+        <option value="claude-3-5-haiku-20241022"  style="background:#12141c;">Claude Haiku 3.5 (เร็ว)</option>
+      
+        <option value="gemini-1.5-pro" style="background:#12141c;">Gemini 1.5 Pro (ฉลาด)</option>
+        <option value="gemini-1.5-flash" style="background:#12141c;">Gemini 1.5 Flash (เร็ว)</option>
+      </select>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin:22px 0;"></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:12px;">◆ ธีมสี</div>
+      <div id="tawee-theme-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin:22px 0;"></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:11px;">◆ โปรไฟล์ส่วนตัว</div>
+      <textarea id="tawee-profile" rows="5" placeholder="ชื่อ: ...&#10;อาชีพ: ...&#10;ความสนใจ: ..." oninput="TAWEE.saveProfile(this.value)" style="width:100%;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#eef1f6;font-size:12.5px;resize:vertical;min-height:110px;font-family:'JetBrains Mono',monospace;line-height:1.6;"></textarea>
+      <div style="font-size:11px;color:rgba(255,255,255,.32);margin-top:7px;">TAWEE จะใช้ข้อมูลนี้ให้คำตอบที่ตรงกับคุณมากขึ้น</div>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin:22px 0;"></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:11px;">◆ สถานที่อากาศ</div>
+      <input id="tawee-weather-city" type="text" placeholder="เช่น กรุงเทพฯ" oninput="TAWEE.setWeatherCity(this.value)" style="width:100%;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#eef1f6;font-size:13px;">
+      <div style="font-size:11px;color:rgba(255,255,255,.32);margin-top:6px;">ใช้กับ skill พยากรณ์อากาศ (Open-Meteo ฟรี ไม่ต้องใช้ key)</div>
+      <!-- ตัดส่วนแจ้งเตือนประจำวัน (LINE) ออกด้วย — ต้องพึ่ง Cloudflare Worker ตัวที่ตัดไปข้างบน ถ้าเก็บไว้จะกดแล้วพังเงียบๆ -->
+    </div>
+  </div>
+
+  <!-- FEED PANEL (right) -->
+  <div id="tawee-feed-panel" style="position:absolute;top:0;right:0;bottom:0;z-index:40;width:min(420px,92vw);transform:translateX(105%);transition:transform .42s cubic-bezier(.22,1,.36,1);background:rgba(10,12,20,.88);backdrop-filter:blur(30px) saturate(150%);-webkit-backdrop-filter:blur(30px) saturate(150%);border-left:1px solid rgba(255,255,255,.07);box-shadow:-30px 0 80px rgba(0,0,0,.5);display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 24px 16px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);">◆ บทสนทนา</span>
+      <div style="display:flex;gap:8px;">
+        <button onclick="TAWEE.clearChat()" title="ล้าง" style="width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#9aa2b1;font-size:14px;cursor:pointer;">⟲</button>
+        <button onclick="TAWEE.closePanel()" style="width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#9aa2b1;font-size:15px;cursor:pointer;">✕</button>
+      </div>
+    </div>
+    <div id="tawee-feed" style="flex:1;overflow-y:auto;padding:12px 22px 16px;display:flex;flex-direction:column;gap:16px;"></div>
+    <div style="flex-shrink:0;padding:14px 24px 20px;border-top:1px solid rgba(255,255,255,.06);">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.32);margin-bottom:11px;">System Status</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:#9aa2b1;">CLAUDE API</span><span id="tawee-api-status">—</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:#9aa2b1;">MICROPHONE</span><span id="tawee-stt-status">—</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:#9aa2b1;">MEMORY</span><span id="tawee-mem-count" style="color:var(--accent);">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AVATAR PANEL (right) -->
+  <div id="tawee-avatar-panel" style="position:absolute;top:0;right:0;bottom:0;z-index:40;width:min(480px,94vw);transform:translateX(105%);transition:transform .42s cubic-bezier(.22,1,.36,1);background:rgba(10,12,20,.9);backdrop-filter:blur(30px) saturate(150%);-webkit-backdrop-filter:blur(30px) saturate(150%);border-left:1px solid rgba(255,255,255,.07);box-shadow:-30px 0 80px rgba(0,0,0,.5);display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 24px 16px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);">◆ เลือกอวตาร TAWEE</span>
+      <button onclick="TAWEE.closePanel()" style="width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#9aa2b1;font-size:15px;cursor:pointer;">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:20px 24px 30px;">
+      <div style="font-size:12.5px;color:rgba(255,255,255,.42);margin-bottom:18px;line-height:1.6;">ทุกแบบตอบสนองเสียงและสถานะแบบ real-time — เลือกที่ชอบได้เลยค่ะ</div>
+      <div id="tawee-avatar-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;"></div>
+    </div>
+  </div>
+
+  <!-- BACKGROUND ANIMATION PANEL (right) -->
+  <div id="tawee-bg-panel" style="position:absolute;top:0;right:0;bottom:0;z-index:40;width:min(480px,94vw);transform:translateX(105%);transition:transform .42s cubic-bezier(.22,1,.36,1);background:rgba(10,12,20,.9);backdrop-filter:blur(30px) saturate(150%);-webkit-backdrop-filter:blur(30px) saturate(150%);border-left:1px solid rgba(255,255,255,.07);box-shadow:-30px 0 80px rgba(0,0,0,.5);display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 24px 16px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06);">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);">◆ พื้นหลังแอนิเมชัน</span>
+      <button onclick="TAWEE.closePanel()" style="width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#9aa2b1;font-size:15px;cursor:pointer;">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:20px 24px 30px;">
+      <div style="font-size:12.5px;color:rgba(255,255,255,.42);margin-bottom:18px;line-height:1.6;">ใช้สีธีมปัจจุบันของเว็บโดยอัตโนมัติ — เปลี่ยนธีมสีได้จากจุดสีด้านบน</div>
+      <div id="tawee-bg-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:26px;"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#b9c0cd;">
+          <span>ความเข้ม</span><span id="tawee-bg-opacity-val" style="font-family:'JetBrains Mono',monospace;color:var(--accent);"></span>
+        </div>
+        <input id="tawee-bg-opacity-slider" type="range" min="10" max="100" step="5" oninput="TAWEE.setBgAnimOpacity(this.value)" style="width:100%;accent-color:var(--accent);">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#b9c0cd;">
+          <span>ความเร็ว</span><span id="tawee-bg-speed-val" style="font-family:'JetBrains Mono',monospace;color:var(--accent);"></span>
+        </div>
+        <input id="tawee-bg-speed-slider" type="range" min="30" max="250" step="10" oninput="TAWEE.setBgAnimSpeed(this.value)" style="width:100%;accent-color:var(--accent);">
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="tawee-toast" style="display:none;position:absolute;bottom:108px;left:50%;transform:translateX(-50%);z-index:50;padding:11px 20px;border-radius:13px;background:rgba(28,10,14,.94);border:1px solid rgba(255,90,110,.4);color:#ffc2cc;font-size:13px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(0,0,0,.5);animation:taweeFade .3s ease;max-width:82vw;text-align:center;pointer-events:none;"></div>
+
+</div><!-- #tawee-root -->
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="app.js?v=20260721o"></script>
+<!-- nlu-router.js: ไม่ใช่ skill (ไม่มี registerSkill) — เป็นล่ามแปลประโยคธรรมชาติเป็นคำสั่งมาตรฐาน
+     app.js เรียกใช้เองหลังจาก regex ของ skill ทุกตัวจับคำสั่งไม่ได้ -->
+<script src="skills/nlu-router.js?v=20260721a"></script>
+<!-- todo-timer.js loads first among skills on purpose: notes.js's /บันทึก/i and tasks.js's
+     broad งาน-related MATCH_RE would otherwise swallow "บันทึกงาน...", "เริ่มงาน...",
+     "จบงาน" commands before todo-timer.js ever saw them. -->
+<script src="skills/todo-timer.js?v=20260721a"></script>
+<!-- finance-tracker.js loads right after todo-timer.js for the same reason: notes.js's
+     broad /บันทึก/i match would otherwise swallow "บันทึกรายรับรายจ่าย" first. -->
+<script src="skills/finance-tracker.js?v=20260723a"></script>
+<script src="skills/weather.js?v=20260720f"></script>
+<script src="skills/calendar.js?v=20260720f"></script>
+<script src="skills/notes.js?v=20260720f"></script>
+<script src="skills/tasks.js?v=20260721g"></script>
+<script src="skills/links.js?v=20260720f"></script>
+<script src="skills/timer.js?v=20260720f"></script>
+<script src="skills/temperature.js?v=20260720f"></script>
+<script src="skills/dashboard.js?v=20260720f"></script>
+<script src="skills/autopost.js?v=20260720f"></script>
+<script src="skills/line-alert.js?v=20260720f"></script>
+<script src="skills/gold-signal.js?v=20260720f"></script>
+<script src="skills/email-check.js?v=20260720f"></script>
+<script src="skills/daily-reminders.js?v=20260720f"></script>
+<script src="skills/morning-routine.js?v=20260720f"></script>
+<script src="skills/music.js?v=20260720f"></script>
+<script src="skills/hub-panel.js?v=20260720f"></script>
+<script>
+// ─── Pre-load config so splash temp fetch gets correct lat/lon ───
+TAWEE.loadCfg().catch(()=>{});
+
+// ─── Splash Screen Logic ─────────────────────────────────
+(function () {
+  // แสดง splash แค่ตอนเข้าใช้งานครั้งแรกเท่านั้น — ครั้งต่อไปข้ามไปหน้าหลักเลย
+  if (localStorage.getItem('tawee_splash_seen')) {
+    const el = document.getElementById('tawee-splash');
+    if (el) el.remove();
+    TAWEE.init();
+    return;
+  }
+
+  const THAI_DAYS   = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  const THAI_MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+  const COMFORT_COLORS = [
+    [16,'#60d4ff'],[20,'#60d4ff'],[24,'#35f0a0'],[27,'#ffe066'],
+    [30,'#ffb454'],[34,'#ff8c42'],[99,'#ff4d6d'],
+  ];
+  function colorFor(t) { return (COMFORT_COLORS.find(c => t <= c[0]) || COMFORT_COLORS[COMFORT_COLORS.length-1])[1]; }
+  const COMFORT_LABELS = [
+    [16,'หนาวมาก ❄️'],[20,'เย็นสบาย 🌬'],[24,'สบายมาก 😊'],[27,'อุ่นสบาย 🌿'],
+    [30,'ร้อนนิดหน่อย 🌤'],[34,'ร้อน ☀️'],[99,'ร้อนมาก 🔥'],
+  ];
+  function labelFor(t) { return (COMFORT_LABELS.find(c => t <= c[0]) || COMFORT_LABELS[COMFORT_LABELS.length-1])[1]; }
+
+  // clock
+  function updateClock() {
+    const d   = new Date();
+    const hh  = String(d.getHours()).padStart(2,'0');
+    const mm  = String(d.getMinutes()).padStart(2,'0');
+    const ss  = String(d.getSeconds()).padStart(2,'0');
+    const el  = document.getElementById('tawee-splash-time');
+    const del = document.getElementById('tawee-splash-date');
+    if (el)  el.innerHTML  = `${hh}<span style="opacity:.4;animation:taweeDots 1s infinite;">:</span>${mm}<span style="font-size:22px;opacity:.55;vertical-align:middle;">:${ss}</span>`;
+    if (del) del.innerHTML = `วัน${THAI_DAYS[d.getDay()]}ที่ ${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear()+543}`;
+  }
+  updateClock();
+  const _clkI = setInterval(updateClock, 1000);
+
+  // countdown ring (8 seconds)
+  let _cd = 0;
+  const TOTAL = 8;
+  function tickCountdown() {
+    _cd++;
+    const pct  = _cd / TOTAL;
+    const ring = document.getElementById('tawee-splash-ring-fg');
+    if (ring) ring.style.strokeDashoffset = 56.5 * (1 - pct);
+    const btn  = document.getElementById('tawee-splash-btn-text');
+    if (btn) btn.textContent = _cd < TOTAL ? `เข้าใช้งาน TAWEE (${TOTAL - _cd})` : 'เข้าใช้งาน TAWEE';
+    if (_cd >= TOTAL) { clearInterval(_cdI); TAWEE.dismissSplash(); }
+  }
+  const _cdI = setInterval(tickCountdown, 1000);
+
+  // particle field canvas
+  (function () {
+    const cv  = document.getElementById('tawee-splash-canvas'); if (!cv) return;
+    const ctx = cv.getContext('2d');
+    const W   = cv.width  = window.innerWidth;
+    const H   = cv.height = window.innerHeight;
+    const PTS = Array.from({length:80}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
+      r: Math.random()*1.8+.5, a: Math.random(),
+    }));
+    function draw() {
+      ctx.clearRect(0,0,W,H);
+      for (const p of PTS) {
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+        if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.283);
+        ctx.fillStyle=`rgba(15,174,125,${p.a*.6})`; ctx.fill();
+      }
+      for (let i=0;i<PTS.length;i++) for(let j=i+1;j<PTS.length;j++){
+        const dx=PTS[j].x-PTS[i].x, dy=PTS[j].y-PTS[i].y, d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){ctx.strokeStyle=`rgba(15,174,125,${.08*(1-d/120)})`;ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(PTS[i].x,PTS[i].y);ctx.lineTo(PTS[j].x,PTS[j].y);ctx.stroke();}
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  // Gauge animation on splash
+  let _gRaf = null, _gFrame = 0, _gTarget = 24;
+  function animateSplashGauge(targetTemp, color) {
+    const cv = document.getElementById('tawee-splash-gauge'); if (!cv) return;
+    const ctx = cv.getContext('2d');
+    const W=200, H=180, cx=100, cy=155, R=72;
+    const START=Math.PI*.82, END=Math.PI*2.18, RANGE=END-START;
+    const MIN_T=16, MAX_T=36;
+    _gTarget = targetTemp; _gFrame = 0;
+    function ease(t){return t<.5?2*t*t:-1+(4-2*t)*t;}
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      // Track
+      ctx.beginPath(); ctx.arc(cx,cy,R,START,END);
+      ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=11; ctx.lineCap='round'; ctx.stroke();
+      // Arc value
+      const current = 16 + (_gTarget-16)*ease(Math.min(1,_gFrame/80));
+      const pct = Math.max(0,Math.min(1,(current-MIN_T)/(MAX_T-MIN_T)));
+      const endA= START+RANGE*pct;
+      if(pct>0){
+        const g=ctx.createLinearGradient(cx-R,cy,cx+R,cy);
+        g.addColorStop(0,'#60d4ff'); g.addColorStop(1,color);
+        ctx.beginPath(); ctx.arc(cx,cy,R,START,endA);
+        ctx.strokeStyle=g; ctx.lineWidth=11; ctx.lineCap='round';
+        ctx.shadowColor=color; ctx.shadowBlur=16; ctx.stroke(); ctx.shadowBlur=0;
+      }
+      // Tip dot
+      ctx.beginPath(); ctx.arc(cx+Math.cos(START+RANGE*pct)*R,cy+Math.sin(START+RANGE*pct)*R,5,0,6.283);
+      ctx.fillStyle=color; ctx.shadowColor=color; ctx.shadowBlur=14; ctx.fill(); ctx.shadowBlur=0;
+      // Ticks
+      for(let i=0;i<=20;i++){
+        const a=START+(i/20)*RANGE, maj=i%4===0;
+        const r1=R-(maj?18:13), r2=R-10;
+        ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1); ctx.lineTo(cx+Math.cos(a)*r2,cy+Math.sin(a)*r2);
+        ctx.strokeStyle=maj?'rgba(255,255,255,.28)':'rgba(255,255,255,.10)'; ctx.lineWidth=maj?1.5:.7; ctx.stroke();
+      }
+      // Labels
+      ctx.font='10px "JetBrains Mono",monospace'; ctx.fillStyle='rgba(255,255,255,.28)'; ctx.textAlign='center';
+      ctx.fillText(`${MIN_T}°`, cx+Math.cos(START)*(R+17), cy+Math.sin(START)*(R+17));
+      ctx.fillText(`${MAX_T}°`, cx+Math.cos(END)*(R+17),   cy+Math.sin(END)*(R+17));
+      // Center reading
+      ctx.font='bold 30px "JetBrains Mono",monospace'; ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(current.toFixed(1)+'°', cx, cy-16);
+      ctx.font='10px "JetBrains Mono",monospace'; ctx.fillStyle=color;
+      ctx.fillText('°C', cx, cy+2);
+      _gFrame++;
+      if(_gFrame<=80) _gRaf=requestAnimationFrame(draw);
+    }
+    if(_gRaf) cancelAnimationFrame(_gRaf);
+    draw();
+  }
+  // Start default gauge while loading
+  animateSplashGauge(24, '#35f0a0');
+
+  // Expose dismiss
+  TAWEE.dismissSplash = function () {
+    try { localStorage.setItem('tawee_splash_seen', '1'); } catch(e) {}
+    clearInterval(_clkI);
+    clearInterval(_cdI);
+    const el = document.getElementById('tawee-splash');
+    if (!el) return;
+    el.style.animation = 'splashOut .5s cubic-bezier(.22,1,.36,1) forwards';
+    setTimeout(() => { el.remove(); TAWEE.init(); }, 480);
+  };
+
+  // Fetch temperature & update splash
+  async function splashFetchTemp() {
+    try {
+      const r = await TAWEE.measureTemperature(true);
+      if (!r) return;
+      const color = colorFor(r.indoor);
+      // Update gradient bar
+      const bar = document.getElementById('tawee-splash-bar');
+      if (bar) bar.style.background = `linear-gradient(90deg,${color},var(--accent2))`;
+      // Animate gauge to real temp
+      animateSplashGauge(r.indoor, color);
+      // Comfort label
+      const cEl = document.getElementById('tawee-splash-comfort');
+      if (cEl) { cEl.textContent = labelFor(r.indoor); cEl.style.color = color; }
+      // Outdoor + humidity
+      const outEl = document.getElementById('tawee-splash-outdoor');
+      if (outEl) outEl.querySelector('span:last-child').textContent = r.outdoor + '°C';
+      const humEl = document.getElementById('tawee-splash-humidity');
+      if (humEl) humEl.querySelector('span:last-child').textContent = r.humidity + '%';
+      // Status
+      const stEl = document.getElementById('tawee-splash-status');
+      if (stEl) stEl.querySelector('span:last-child').textContent = 'พร้อมใช้งาน ✓';
+    } catch(e) {}
+  }
+  // Delay slightly so TAWEE.init can register skills first
+  setTimeout(splashFetchTemp, 600);
+})();
+
+</script>
+</body>
+</html>

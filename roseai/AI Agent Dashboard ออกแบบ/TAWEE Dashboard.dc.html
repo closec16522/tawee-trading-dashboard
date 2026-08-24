@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>window.TAWEE_TTS_PAGE = 'tawee-dashboard';</script>
+<script src="../soniox-tts.js"></script>
+<script src="../tawee-voice-input.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.35)}}
+  @keyframes shimmer{0%{left:-120%}100%{left:220%}}
+  @keyframes prog-sh{0%{transform:translateX(-300%)}100%{transform:translateX(500%)}}
+  @keyframes scan{0%{top:-2px;opacity:0}5%{opacity:.6}95%{opacity:.6}100%{top:100vh;opacity:0}}
+  @keyframes fin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes toast-in{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  :root{--ac:#0FAE7D;--acr:15,174,125}
+  body{margin:0;background:#0C0C10;overflow:hidden;font-family:'Space Grotesk',sans-serif;color:#F0F0F5}
+  *{box-sizing:border-box}
+  input,textarea{font-family:'Space Grotesk',sans-serif;color:#F0F0F5}
+  ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(var(--acr),.3);border-radius:3px}
+  ::placeholder{color:rgba(255,255,255,.22)}
+</style>
+</helmet>
+
+<canvas id="bg-cv" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none"></canvas>
+<div style="position:fixed;left:0;top:0;width:100%;height:1px;z-index:20;pointer-events:none;animation:scan 10s 2s linear infinite;background:linear-gradient(90deg,transparent,var(--ac),transparent)"></div>
+
+<!-- Toast -->
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;bottom:24px;left:50%;z-index:300;background:#1C1C24;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 22px;font:500 13px 'Space Grotesk';color:#F0F0F5;box-shadow:0 8px 32px rgba(0,0,0,.5);white-space:nowrap;animation:toast-in .28s ease">{{ toast }}</div>
+</sc-if>
+
+<!-- Avatar dropdown -->
+<sc-if value="{{ showAvatar }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;top:52px;right:14px;background:#1C1C24;border:1px solid rgba(255,255,255,.1);border-radius:14px;z-index:200;width:210px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.5)">
+    <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px">
+      <div style="{{ avCircle }}"><span style="font:700 13px 'Space Grotesk'">R</span></div>
+      <div><div style="font:600 13px 'Space Grotesk'">Admin</div><div style="font:400 10px 'Space Mono';color:rgba(255,255,255,.35)">admin@tawee.ai</div></div>
+    </div>
+    <div style="padding:7px">
+      <div onClick="{{ goApiSettings }}" style="padding:9px 12px;border-radius:8px;font:500 13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.7)" style-hover="background:rgba(255,255,255,.05)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13M2.6 2.6l1.1 1.1M10.3 10.3l1.1 1.1M2.6 11.4l1.1-1.1M10.3 3.7l1.1-1.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        API Settings
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,.06);margin:5px 0"></div>
+      <div onClick="{{ closeAvatar }}" style="padding:9px 12px;border-radius:8px;font:500 13px;cursor:pointer;color:#FF6B6B;display:flex;align-items:center;gap:8px" style-hover="background:rgba(255,107,107,.08)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 1h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9M6 10l-4-3 4-3M2 7h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        ออกจากระบบ
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- LAYOUT -->
+<div style="display:flex;height:100vh;overflow:hidden;position:relative;z-index:1">
+
+  <!-- SIDEBAR -->
+  <div style="width:226px;background:rgba(8,8,14,.97);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;z-index:2">
+    <div style="padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.05)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="{{ logoDot }}"></div>
+        <span style="font:700 20px 'Space Grotesk';letter-spacing:.06em">TAWEE</span>
+      </div>
+      <div style="font:400 9px 'Space Mono';color:rgba(255,255,255,.25);letter-spacing:.1em;margin-top:4px;padding-left:17px">JARVIS OS · AI AGENT</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;padding:14px 0 10px;border-bottom:1px solid rgba(255,255,255,.05)">
+      <canvas id="main-orb" style="width:148px;height:148px"></canvas>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:6px">
+        <div style="{{ statusDot }}"></div>
+        <span style="font:400 10px 'Space Mono';color:rgba(255,255,255,.38)">พร้อมใช้งาน</span>
+      </div>
+      <div style="font:700 15px 'Space Mono';color:rgba(255,255,255,.16);margin-top:3px;letter-spacing:.1em">{{ time }}</div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding:10px 8px">
+      <!-- Overview -->
+      <div onClick="{{ navDash }}" style="{{ navOv }}">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" style="{{ niOv }}"><rect x="1" y="1" width="5" height="5" rx="1.2"/><rect x="8" y="1" width="5" height="5" rx="1.2"/><rect x="1" y="8" width="5" height="5" rx="1.2"/><rect x="8" y="8" width="5" height="5" rx="1.2"/></svg>
+        <span style="{{ nlOv }}">ภาพรวม</span>
+      </div>
+
+      <!-- AI Group header -->
+      <div onClick="{{ toggleAI }}" style="display:flex;align-items:center;justify-content:space-between;padding:7px 8px;cursor:pointer;border-radius:7px;margin-top:4px" style-hover="background:rgba(255,255,255,.03)">
+        <span style="font:700 9px 'Space Mono';color:rgba(255,255,255,.28);letter-spacing:.12em">AI AGENTS</span>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="{{ chevAI }}"><path d="M2 3.5L5 6.5L8 3.5" stroke="rgba(255,255,255,.35)" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+      <sc-if value="{{ grpAI }}" hint-placeholder-val="{{ true }}">
+        <div style="padding-left:6px;display:flex;flex-direction:column;gap:1px;margin-bottom:4px">
+          <div onClick="{{ navImage }}" style="{{ navImg }}">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="{{ niImg }}"><rect x="1" y="1" width="12" height="12" rx="2"/><circle cx="4.5" cy="4.5" r="1"/><path d="M1 9.5l3.5-3.5 2.5 2.5 1.5-1.5 4 4"/></svg>
+            <span style="{{ nlImg }}">Image Creator</span>
+            <div style="{{ rbOAI }}">{{ rbOAItxt }}</div>
+          </div>
+          <div onClick="{{ navContent }}" style="{{ navCont }}">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="{{ niCont }}"><path d="M2 4h10M2 7h7M2 10h5" stroke-linecap="round"/></svg>
+            <span style="{{ nlCont }}">Content Writer</span>
+            <div style="{{ rbCl }}">{{ rbCltxt }}</div>
+          </div>
+          <div onClick="{{ navVideo }}" style="{{ navVid }}">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="{{ niVid }}"><rect x="1" y="3" width="9" height="8" rx="1.5"/><path d="M10 5.5l3-2v7l-3-2"/></svg>
+            <span style="{{ nlVid }}">Video Flow</span>
+            <div style="{{ rbFlow }}">{{ rbFlowtxt }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- Social Group -->
+      <div onClick="{{ toggleSoc }}" style="display:flex;align-items:center;justify-content:space-between;padding:7px 8px;cursor:pointer;border-radius:7px;margin-top:2px" style-hover="background:rgba(255,255,255,.03)">
+        <span style="font:700 9px 'Space Mono';color:rgba(255,255,255,.28);letter-spacing:.12em">SOCIAL</span>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="{{ chevSoc }}"><path d="M2 3.5L5 6.5L8 3.5" stroke="rgba(255,255,255,.35)" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+      <sc-if value="{{ grpSocial }}" hint-placeholder-val="{{ false }}">
+        <div style="padding-left:6px;display:flex;flex-direction:column;gap:1px;margin-bottom:4px">
+          <div onClick="{{ navFacebook }}" style="{{ navFb }}">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="{{ niFb }}"><circle cx="7" cy="7" r="6"/><path d="M8.5 4.5H7.5a1 1 0 0 0-1 1V7H8l-.5 2H6.5v3.5" stroke-linecap="round"/></svg>
+            <span style="{{ nlFb }}">Facebook Post</span>
+            <div style="{{ rbFb }}">{{ rbFbtxt }}</div>
+          </div>
+          <div onClick="{{ navAds }}" style="{{ navAd }}">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="{{ niAd }}"><path d="M1 11l3-4 2.5 2 3-5 3 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="{{ nlAd }}">Ad Analytics</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="height:1px;background:rgba(255,255,255,.05);margin:6px 0"></div>
+      <div onClick="{{ navApi }}" style="{{ navApiSt }}">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="{{ niApi }}"><rect x="1" y="3" width="12" height="8" rx="1.5"/><path d="M4 7h2M7 7h3" stroke-linecap="round"/></svg>
+        <span style="{{ nlApi }}">API Settings</span>
+      </div>
+      <div onClick="{{ navHistory }}" style="{{ navHist }}">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" style="{{ niHist }}"><circle cx="7" cy="7" r="5.5"/><path d="M7 4.5V7l2 1.5" stroke-linecap="round"/></svg>
+        <span style="{{ nlHist }}">ประวัติ</span>
+      </div>
+    </div>
+
+    <!-- Theme + Chat button -->
+    <div style="padding:10px 12px 16px;border-top:1px solid rgba(255,255,255,.05)">
+      <div style="font:700 9px 'Space Mono';color:rgba(255,255,255,.25);letter-spacing:.12em;margin-bottom:8px">ธีมสี</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div onClick="{{ th0 }}" style="{{ dot0 }}" title="มรกต"></div>
+        <div onClick="{{ th1 }}" style="{{ dot1 }}" title="แซฟไฟร์"></div>
+        <div onClick="{{ th2 }}" style="{{ dot2 }}" title="อเมทิสต์"></div>
+        <div onClick="{{ th3 }}" style="{{ dot3 }}" title="บรอนซ์"></div>
+        <div onClick="{{ th4 }}" style="{{ dot4 }}" title="ไวน์"></div>
+      </div>
+      <div onClick="{{ goToTawee }}" style="{{ chatBtnSt }}">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5"><path d="M1 2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4l-3 2V2Z"/></svg>
+        แชทกับ TAWEE
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0">
+    <!-- Topbar -->
+    <div style="height:50px;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(10,10,16,.92);backdrop-filter:blur(16px);flex-shrink:0;gap:14px">
+      <div style="font:600 14px 'Space Grotesk';flex:1">{{ pageTitle }}</div>
+      <div style="{{ apiCntSt }}">{{ apiCntTxt }}</div>
+      <div onClick="{{ toggleAvatar }}" style="{{ avBtnSt }}">R</div>
+    </div>
+
+    <!-- TAB: Overview -->
+    <sc-if value="{{ tvOverview }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:1;overflow-y:auto;padding:20px 22px 32px;display:flex;flex-direction:column;gap:14px">
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <div style="{{ sc }}"><div style="{{ sn1 }}">{{ c1 }}</div><div style="{{ sl }}">งานวันนี้</div></div>
+          <div style="{{ sc }}"><div style="{{ sn2 }}">{{ c2 }}</div><div style="{{ sl }}">กำลังรัน</div></div>
+          <div style="{{ sc }}"><div style="{{ sn3 }}">{{ c3 }}</div><div style="{{ sl }}">สำเร็จ</div></div>
+          <div style="{{ sc }}"><div style="{{ sn4 }}">{{ c4d }}</div><div style="{{ sl }}">ค่าใช้จ่าย</div></div>
+        </div>
+
+        <!-- Agent rows — quick-run right here, or click the title to open the full page -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+
+          <!-- Content Writer -->
+          <div style="{{ rowCont }}">
+            <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onClick="{{ navContent }}">
+              <div style="{{ icCont }}"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#8B5CF6" stroke-width="1.5"><path d="M3 5h12M3 9h8M3 13h6" stroke-linecap="round"/></svg></div>
+              <div style="flex:1">
+                <div style="font:600 14px 'Space Grotesk'">Content Writer</div>
+                <div style="font:400 10px 'Space Mono';color:rgba(255,255,255,.3);margin-top:2px">Claude AI</div>
+              </div>
+              <div style="{{ badCont }}">{{ badContTxt }}</div>
+              <span style="color:rgba(255,255,255,.28);font-size:15px">→</span>
+            </div>
+            <sc-if value="{{ contentRunning }}" hint-placeholder-val="{{ false }}">
+              <div style="background:rgba(255,255,255,.06);border-radius:4px;height:4px;overflow:hidden;position:relative">
+                <div style="{{ rowProgCont }}"></div>
+                <div style="position:absolute;top:0;height:100%;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:prog-sh 1.6s infinite"></div>
+              </div>
+            </sc-if>
+            <div style="display:flex;gap:8px">
+              <input value="{{ contentPrompt }}" onChange="{{ setContentPrompt }}" placeholder="หัวข้อหรือโจทย์..." style="{{ inp }}" />
+              <div onClick="{{ runContent }}" style="{{ ovBtnCont }}">{{ ovTxtCont }}</div>
+            </div>
+          </div>
+
+          <!-- Image Creator -->
+          <div style="{{ rowImg }}">
+            <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onClick="{{ navImage }}">
+              <div style="{{ icImg }}"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#FF2D78" stroke-width="1.5"><rect x="1" y="1" width="16" height="16" rx="3"/><circle cx="5.5" cy="5.5" r="1.5"/><path d="M1 12l5-5 3.5 3.5 2-2 6 6"/></svg></div>
+              <div style="flex:1">
+                <div style="font:600 14px 'Space Grotesk'">Image Creator</div>
+                <div style="font:400 10px 'Space Mono';color:rgba(255,255,255,.3);margin-top:2px">OpenAI DALL-E 3</div>
+              </div>
+              <div style="{{ badImg }}">{{ badImgTxt }}</div>
+              <span style="color:rgba(255,255,255,.28);font-size:15px">→</span>
+            </div>
+            <sc-if value="{{ imgRunning }}" hint-placeholder-val="{{ false }}">
+              <div style="background:rgba(255,255,255,.06);border-radius:4px;height:4px;overflow:hidden;position:relative">
+                <div style="{{ rowProgImg }}"></div>
+                <div style="position:absolute;top:0;height:100%;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:prog-sh 1.6s infinite"></div>
+              </div>
+            </sc-if>
+            <div style="display:flex;gap:8px">
+              <input value="{{ imgPrompt }}" onChange="{{ setImgPrompt }}" placeholder="prompt ภาษาอังกฤษ..." style="{{ inp }}" />
+              <div onClick="{{ runImage }}" style="{{ ovBtnImg }}">{{ ovTxtImg }}</div>
+            </div>
+          </div>
+
+          <!-- Video Flow -->
+          <div style="{{ rowVid }}">
+            <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onClick="{{ navVideo }}">
+              <div style="{{ icVid }}"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#F59E0B" stroke-width="1.5"><rect x="1" y="4" width="12" height="10" rx="2"/><path d="M13 7l4-2.5v9L13 11"/></svg></div>
+              <div style="flex:1">
+                <div style="font:600 14px 'Space Grotesk'">Video Flow</div>
+                <div style="font:400 10px 'Space Mono';color:rgba(255,255,255,.3);margin-top:2px">n8n / Make Webhook</div>
+              </div>
+              <div style="{{ badVid }}">{{ badVidTxt }}</div>
+              <span style="color:rgba(255,255,255,.28);font-size:15px">→</span>
+            </div>
+            <sc-if value="{{ videoRunning }}" hint-placeholder-val="{{ false }}">
+              <div style="background:rgba(255,255,255,.06);border-radius:4px;height:4px;overflow:hidden;position:relative">
+                <div style="{{ rowProgVid }}"></div>
+                <div style="position:absolute;top:0;height:100%;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:prog-sh 1.6s infinite"></div>
+              </div>
+            </sc-if>
+            <div style="display:flex;gap:8px">
+              <input value="{{ videoDesc }}" onChange="{{ setVideoDesc }}" placeholder="คำอธิบายวิดีโอ..." style="{{ inp }}" />
+              <div onClick="{{ runVideo }}" style="{{ ovBtnVid }}">{{ ovTxtVid }}</div>
+            </div>
+          </div>
+
+          <!-- Facebook Post -->
+          <div style="{{ rowFb }}">
+            <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onClick="{{ navFacebook }}">
+              <div style="{{ icFb }}"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#3B82F6" stroke-width="1.5"><circle cx="9" cy="9" r="7.5"/><path d="M11 5.5h-1.5a1 1 0 0 0-1 1V9H10l-.5 2.5H8.5V16" stroke-linecap="round"/></svg></div>
+              <div style="flex:1">
+                <div style="font:600 14px 'Space Grotesk'">Facebook Post</div>
+                <div style="font:400 10px 'Space Mono';color:rgba(255,255,255,.3);margin-top:2px">Graph API</div>
+              </div>
+              <div style="{{ badFb }}">{{ badFbTxt }}</div>
+              <span style="color:rgba(255,255,255,.28);font-size:15px">→</span>
+            </div>
+            <sc-if value="{{ fbRunning }}" hint-placeholder-val="{{ false }}">
+              <div style="background:rgba(255,255,255,.06);border-radius:4px;height:4px;overflow:hidden;position:relative">
+                <div style="{{ rowProgFb }}"></div>
+                <div style="position:absolute;top:0;height:100%;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:prog-sh 1.6s infinite"></div>
+              </div>
+            </sc-if>
+            <div style="display:flex;gap:8px">
+              <input value="{{ fbText }}" onChange="{{ setFbText }}" placeholder="ข้อความโพสต์..." style="{{ inp }}" />
+              <div onClick="{{ runFacebook }}" style="{{ ovBtnFb }}">{{ ovTxtFb }}</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- TAB: Image Creator (dedicated) -->
+    <sc-if value="{{ tvImage }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;overflow-y:auto;padding:20px 22px 32px">
+        <div style="max-width:640px">
+          <div style="{{ cardImg }}">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="{{ icImg }}"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#FF2D78" stroke-width="1.5"><rect x="1" y="1" width="16" height="16" rx="3"/><circle cx="5.5" cy="5.5" r="1.5"/><path d="M1 12l5-5 3.5 3.5 2-2 6 6"/></svg></div>
+                <div>
+                  <div style="font:600 14px 'Space Grotesk'">Image Creator</div>
+                  <div style="font:400 10px 'Space Mono';color:rgba(255,255,255,.3);margin-top:2px">OpenAI DALL-E 3</div>
+                </div>
+              </div>
+              <div style="{{ badImg }}">{{ badImgTxt }}</div>
+            </div>
+            <sc-if value="{{ imgRunning }}" hint-placeholder-val="{{ false }}">
+              <div style="background:rgba(255,255,255,.06);border-radius:4px;height:4px;overflow:hidden;margin-bottom:8px;position:relative">
+                <div style="{{ progImg }}"></div>
+                <div style="position:absolute;top:0;height:100%;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:prog-sh 1.6s infinite"></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ lastImage }}" hint-placeholder-val="{{ false }}">
+              <img src="{{ lastImage }}" style="width:100%;border-radius:8px;margin-bottom:8px;max-height:320px;object-fit:cover" />
+            </sc-if>
+            <div style="display:flex;gap:8px">
+              <input value="{{ imgPrompt }}" onChange="{{ setImgPrompt }}" placeholder="prompt ภาษาอังกฤษ..." style="{{ inp }}" />
+              <div onClick="{{ runImage }}" style="{{ rnImgSt }}">{{ rnImgTxt }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- TAB: Content Writer (dedicated) -->
+    <sc-if value="{{ tvContent }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;overflow-y:auto;padding:20px 22px 32px">
+        <div style="max-width:640px">
+          <div style="{{ cardCont }}">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="{{ icCont }}"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#8B5CF6" stroke-width="1.5"><path d="M3 5h12M3 9h8M3 13h6" stroke-linecap="round"/></svg></div>
+                <div>
+                  <div style="font:600 14px 'Space Grotesk'">Content Writer</div>
+                  <div style="font:400 10px 'Space Mono';color:rgba(255,255,255,.3);margin-top:2px">Claude AI</div>
+                </div>
+              </div>
+              <div style="{{ badCont }}">{{ badContTxt }}</div>
+            </div>
+            <sc-if value="{{ lastContent }}" hint-placeholder-val="{{ false }}">
+              <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px 12px;font:400 12px 'Space Grotesk';color:rgba(255,255,255,.65);line-height:1.6;max-height:320px;overflow-y:auto;margin-bottom:8px">{{ lastContent }}</div>
+            </sc-if>
+            <div style="display:flex;gap:8px">
+              <input value="{{ contentPrompt }}" onChange="{{ setContentPrompt }}" placeholder="หัวข้อหรือโจทย์..." style="{{ inp }}" />
+              <div onClick="{{ runContent }}" style="{{ rnContSt }}">{{ rnContTxt }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- TAB: Facebook Post (dedicated) -->
+    <sc-if value="{{ tvFacebook }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;overflow-y:auto;padding:20px 22px 32px">
+        <div style="max-width:640px">
+          <div style="{{ cardFb }}">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="{{ icFb }}"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#3B82F6" stroke-width="1.5"><circle cx="9" cy="9" r="7.5"/><path d="M11 5.5h-1.5a1 1 0 0 0-1 1V9H10l-.5 2.5H8.5V16" stroke-linecap="round"/></svg></div>
+                <div>
+                  <div style="font:600 14px 'Space Grotesk'">Facebook Post</div>
+                  <div style="font:400 10px 'Space Mono';color:rgba(255,255,255,.3);margin-top:2px">Graph API</div>
+                </div>
+              </div>
+              <div style="{{ badFb }}">{{ badFbTxt }}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <textarea value="{{ fbText }}" onChange="{{ setFbText }}" placeholder="ข้อความโพสต์..." rows="3" style="{{ ta }}"></textarea>
+              <input value="{{ fbImageUrl }}" onChange="{{ setFbImageUrl }}" placeholder="Image URL (ไม่บังคับ หรือใช้ภาพจาก Image Creator)" style="{{ inp }}" />
+            </div>
+            <div onClick="{{ runFacebook }}" style="{{ rnFbSt }}">{{ rnFbTxt }}</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- TAB: Video Flow (dedicated) -->
+    <sc-if value="{{ tvVideo }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;overflow-y:auto;padding:20px 22px 32px">
+        <div style="max-width:640px">
+          <div style="{{ cardVid }}">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="{{ icVid }}"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="#F59E0B" stroke-width="1.5"><rect x="1" y="4" width="12" height="10" rx="2"/><path d="M13 7l4-2.5v9L13 11"/></svg></div>
+                <div>
+                  <div style="font:600 14px 'Space Grotesk'">Video Flow</div>
+                  <div style="font:400 10px 'Space Mono';color:rgba(255,255,255,.3);margin-top:2px">n8n / Make Webhook</div>
+                </div>
+              </div>
+              <div style="{{ badVid }}">{{ badVidTxt }}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <input value="{{ videoDesc }}" onChange="{{ setVideoDesc }}" placeholder="คำอธิบายวิดีโอ..." style="{{ inp }}" />
+              <input value="{{ videoScript }}" onChange="{{ setVideoScript }}" placeholder="สคริปต์หรือ text overlay..." style="{{ inp }}" />
+            </div>
+            <div onClick="{{ runVideo }}" style="{{ rnVidSt }}">{{ rnVidTxt }}</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- TAB: Ad Analytics (placeholder) -->
+    <sc-if value="{{ tvAds }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;overflow-y:auto;padding:20px 22px 32px">
+        <div style="max-width:640px;background:#131320;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:26px;text-align:center;color:rgba(255,255,255,.4);font:400 13px 'Space Grotesk'">Ad Analytics ยังไม่พร้อมใช้งานค่ะ — จะเปิดให้ใช้ในเวอร์ชันถัดไป</div>
+      </div>
+    </sc-if>
+
+    <!-- TAB: API Settings -->
+    <sc-if value="{{ tvApi }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;overflow-y:auto;padding:20px 22px 32px">
+        <div style="font:700 11px 'Space Mono';color:rgba(255,255,255,.28);letter-spacing:.1em;margin-bottom:16px">API KEY MANAGEMENT — บันทึกใน Browser Storage</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+
+          <!-- OpenAI -->
+          <div style="{{ apiCard }}">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+              <div style="width:40px;height:40px;border-radius:10px;background:#10A37F22;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#10A37F" stroke-width="1.4"><circle cx="10" cy="10" r="8.5"/><path d="M7 10.5c0-1.66 1.34-3 3-3s3 1.34 3 3-1.34 3-3 3"/><circle cx="10" cy="10" r="1.2" fill="#10A37F"/></svg>
+              </div>
+              <div style="flex:1">
+                <div style="font:700 14px 'Space Grotesk'">OpenAI — Image Creator</div>
+                <div style="font:400 11px 'Space Mono';color:rgba(255,255,255,.35);margin-top:2px">DALL-E 3 · สร้างภาพอัตโนมัติ</div>
+              </div>
+              <div style="{{ cnOAI }}">{{ cnOAItxt }}</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input id="oai-key" type="password" placeholder="sk-..." style="{{ apiInp }}" />
+              <div onClick="{{ testOAI }}" style="{{ testBtnSt }}">ทดสอบ</div>
+              <div onClick="{{ saveOAI }}" style="{{ saveBtnSt }}">บันทึก</div>
+            </div>
+          </div>
+
+          <!-- Claude -->
+          <div style="{{ apiCard }}">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+              <div style="width:40px;height:40px;border-radius:10px;background:#CC785C22;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#CC785C" stroke-width="1.4"><path d="M6 14l4-9 4 9M7.5 11h5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div style="flex:1">
+                <div style="font:700 14px 'Space Grotesk'">Claude — Content Writer</div>
+                <div style="font:400 11px 'Space Mono';color:rgba(255,255,255,.35);margin-top:2px">claude-sonnet-4-5 · เขียน Content</div>
+              </div>
+              <div style="{{ cnCl }}">{{ cnCltxt }}</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input id="cl-key" type="password" placeholder="sk-ant-..." style="{{ apiInp }}" />
+              <div onClick="{{ testCl }}" style="{{ testBtnSt }}">ทดสอบ</div>
+              <div onClick="{{ saveCl }}" style="{{ saveBtnSt }}">บันทึก</div>
+            </div>
+          </div>
+
+          <!-- Facebook -->
+          <div style="{{ apiCard }}">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+              <div style="width:40px;height:40px;border-radius:10px;background:#1877F222;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#1877F2" stroke-width="1.4"><circle cx="10" cy="10" r="8.5"/><path d="M12 6.5h-1.5a1 1 0 0 0-1 1V10h2.5l-.5 2.5H9.5V17" stroke-linecap="round"/></svg>
+              </div>
+              <div style="flex:1">
+                <div style="font:700 14px 'Space Grotesk'">Facebook — Auto Post</div>
+                <div style="font:400 11px 'Space Mono';color:rgba(255,255,255,.35);margin-top:2px">Graph API · Page Access Token</div>
+              </div>
+              <div style="{{ cnFb }}">{{ cnFbtxt }}</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input id="fb-token" type="password" placeholder="Page Access Token (EAAl...)" style="{{ apiInp }}" />
+              <div onClick="{{ testFB }}" style="{{ testBtnSt }}">ทดสอบ</div>
+              <div onClick="{{ saveFB }}" style="{{ saveBtnSt }}">บันทึก</div>
+            </div>
+          </div>
+
+          <!-- Flow -->
+          <div style="{{ apiCard }}">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+              <div style="width:40px;height:40px;border-radius:10px;background:#EA4B7122;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#EA4B71" stroke-width="1.4"><circle cx="4" cy="10" r="2.5"/><circle cx="16" cy="4" r="2.5"/><circle cx="16" cy="16" r="2.5"/><path d="M6.5 10h4l3-4.5M10.5 10l3 4.5"/></svg>
+              </div>
+              <div style="flex:1">
+                <div style="font:700 14px 'Space Grotesk'">Flow — Video Automation</div>
+                <div style="font:400 11px 'Space Mono';color:rgba(255,255,255,.35);margin-top:2px">n8n / Make · Webhook URL</div>
+              </div>
+              <div style="{{ cnFlow }}">{{ cnFlowtxt }}</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input id="flow-url" placeholder="https://your-n8n.com/webhook/..." style="{{ apiInp }}" />
+              <div onClick="{{ testFlow }}" style="{{ testBtnSt }}">ทดสอบ</div>
+              <div onClick="{{ saveFlow }}" style="{{ saveBtnSt }}">บันทึก</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- TAB: History -->
+    <sc-if value="{{ tvHistory }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;overflow-y:auto;padding:20px 22px 32px">
+        <div style="font:700 11px 'Space Mono';color:rgba(255,255,255,.28);letter-spacing:.1em;margin-bottom:16px">ประวัติการทำงาน</div>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ histItems }}" as="h" hint-placeholder-count="5">
+            <div style="display:flex;gap:14px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+              <div style="{{ h.dot }}"></div>
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:3px">
+                  <span style="font:600 13px 'Space Grotesk'">{{ h.agent }}</span>
+                  <span style="font:400 10px 'Space Mono';color:rgba(255,255,255,.25)">{{ h.time }}</span>
+                  <span style="{{ h.badge }}">{{ h.status }}</span>
+                </div>
+                <div style="font:400 12px 'Space Grotesk';color:rgba(255,255,255,.48)">{{ h.msg }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- แถบพูด/พิมพ์สั่งงาน — แบบเดียวกับหน้าหลัก TAWEE -->
+    <div style="flex-shrink:0;border-top:1px solid rgba(255,255,255,.06);background:rgba(10,10,16,.92);backdrop-filter:blur(16px);padding:12px 22px 16px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div title="เปิด/ปิดกล้อง" style="flex-shrink:0;width:44px;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center">📷</div>
+        <div onClick="{{ toggleVoice }}" style="{{ micStyleCmd }}">🎙</div>
+        <div style="flex:1;display:flex;align-items:center;gap:10px;padding:7px 8px 7px 20px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)">
+          <input ref="{{ textInputRef }}" type="text" placeholder="พิมพ์ข้อความแล้วกด Enter หรือกดไมค์เพื่อพูด…" onKeyDown="{{ onTextKeyDown }}"
+            style="flex:1;background:transparent;border:none;color:#F0F0F5;font-size:14px;padding:8px 0;font-family:inherit;outline:none">
+          <div onClick="{{ submitText }}" style="flex-shrink:0;padding:11px 22px;border-radius:13px;cursor:pointer;background:var(--ac);color:#04130c;font-size:14px;font-weight:600">ส่ง</div>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:10px;color:rgba(255,255,255,.32);margin-top:6px">{{ cmdMsg }}</div>
+    </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+// Same 5 themes as TAWEE's main page (app.js PALETTES) — deep jewel tones with a
+// metallic edge — so the theme picked here or there stays in sync via the
+// shared 'tawee_cfg_v3' localStorage config.
+const THEMES=[
+  {id:'emerald', hex:'#0FAE7D',rgb:'15,174,125', sec:'#065C40',label:'มรกต'},
+  {id:'sapphire',hex:'#3568D4',rgb:'53,104,212', sec:'#122A63',label:'แซฟไฟร์'},
+  {id:'amethyst',hex:'#7B4FE0',rgb:'123,79,224', sec:'#3A1B6E',label:'อเมทิสต์'},
+  {id:'bronze',  hex:'#C97C3D',rgb:'201,124,61', sec:'#7A431C',label:'บรอนซ์'},
+  {id:'wine',    hex:'#B0304B',rgb:'176,48,75',  sec:'#5C1524',label:'ไวน์'},
+];
+const TAWEE_CFG_KEY='tawee_cfg_v3';
+function loadSharedThemeIdx(){
+  try{
+    const raw=localStorage.getItem(TAWEE_CFG_KEY);
+    if(raw){const idx=THEMES.findIndex(t=>t.id===JSON.parse(raw).theme);if(idx>=0)return idx;}
+  }catch(e){}
+  return 0;
+}
+function saveSharedTheme(id){
+  try{
+    const cfg=JSON.parse(localStorage.getItem(TAWEE_CFG_KEY)||'{}');
+    cfg.theme=id;
+    localStorage.setItem(TAWEE_CFG_KEY,JSON.stringify(cfg));
+  }catch(e){}
+}
+
+class Component extends DCLogic {
+  state={
+    c1:0,c2:0,c3:0,c4:0,time:'--:--:--',
+    // เปิดตรงไปหน้า agent ที่ต้องการได้ด้วย URL เช่น ?nav=facebook (ใช้จากคำสั่งเสียง/พิมพ์ที่หน้าหลัก TAWEE)
+    activeNav:(new URLSearchParams(location.search).get('nav'))||'overview',grpAI:true,grpSocial:false,themeIdx:loadSharedThemeIdx(),
+    apiStatus:{openai:false,claude:false,fb:false,flow:false},
+    imgRunning:false,imgPrompt:'',lastImage:null,
+    contentRunning:false,contentPrompt:'',lastContent:'',
+    fbRunning:false,fbText:'',fbImageUrl:'',
+    videoRunning:false,videoDesc:'',videoScript:'',
+    showAvatar:false,toast:null,
+    voiceListening:false,cmdMsg:'พิมพ์ข้อความหรือกดไมค์เพื่อสั่งงาน',
+    histItems:[
+      {agent:'Image Creator',time:'22:00',msg:'สร้าง product_v2.png สำเร็จ (1024×1024)',status:'✓',dot:{width:'8px',height:'8px',borderRadius:'50%',background:'#FF2D78',flexShrink:0,marginTop:'4px'},badge:{background:'rgba(52,211,153,.15)',color:'#34D399',borderRadius:'20px',padding:'2px 8px',font:"700 9px 'Space Mono'"}},
+      {agent:'Content Writer',time:'21:55',msg:'เขียนแคปชั่น 3 ชิ้น + บทความ 1 ชิ้น สำเร็จ',status:'✓',dot:{width:'8px',height:'8px',borderRadius:'50%',background:'#8B5CF6',flexShrink:0,marginTop:'4px'},badge:{background:'rgba(52,211,153,.15)',color:'#34D399',borderRadius:'20px',padding:'2px 8px',font:"700 9px 'Space Mono'"}},
+      {agent:'Facebook Post',time:'20:30',msg:'โพสต์ไปยัง Page สำเร็จ — 234 ถูกใจ',status:'✓',dot:{width:'8px',height:'8px',borderRadius:'50%',background:'#3B82F6',flexShrink:0,marginTop:'4px'},badge:{background:'rgba(52,211,153,.15)',color:'#34D399',borderRadius:'20px',padding:'2px 8px',font:"700 9px 'Space Mono'"}},
+      {agent:'Video Flow',time:'19:45',msg:'ส่ง webhook ไปยัง n8n เรียบร้อย',status:'✓',dot:{width:'8px',height:'8px',borderRadius:'50%',background:'#F59E0B',flexShrink:0,marginTop:'4px'},badge:{background:'rgba(52,211,153,.15)',color:'#34D399',borderRadius:'20px',padding:'2px 8px',font:"700 9px 'Space Mono'"}},
+    ],
+  };
+  _rafs=[];_ints=[];
+  textInputRef=React.createRef();
+  _themeColor=THEMES[loadSharedThemeIdx()].hex;
+  _themeRgb=THEMES[loadSharedThemeIdx()].rgb;
+
+  componentDidMount(){
+    document.documentElement.style.setProperty('--ac',this._themeColor);
+    document.documentElement.style.setProperty('--acr',this._themeRgb);
+    setTimeout(()=>this._ac('c1',12,900),100);
+    setTimeout(()=>this._ac('c2',2,700),200);
+    setTimeout(()=>this._ac('c3',8,1050),300);
+    setTimeout(()=>this._ac('c4',240,1300),400);
+    this._clock();this._ints.push(setInterval(()=>this._clock(),1000));
+    const s={openai:!!localStorage.getItem('tawee_oai'),claude:!!localStorage.getItem('tawee_cl'),fb:!!localStorage.getItem('tawee_fb_t'),flow:!!localStorage.getItem('tawee_flow')};
+    this.setState({apiStatus:s});
+    setTimeout(()=>{
+      const f=(id,k)=>{const e=document.getElementById(id);if(e)e.value=localStorage.getItem(k)||'';};
+      f('oai-key','tawee_oai');f('cl-key','tawee_cl');f('fb-token','tawee_fb_t');f('flow-url','tawee_flow');
+    },400);
+    this._initOrb();this._initBg();
+  }
+  componentWillUnmount(){
+    this._rafs.forEach(r=>cancelAnimationFrame(r));this._ints.forEach(i=>clearInterval(i));
+    if(this._voiceInput) this._voiceInput.stop(true);
+    if(window.SonioxTTS) window.SonioxTTS.resetBargeIn();
+  }
+  _clock(){const n=new Date();this.setState({time:[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':')});}
+  _ac(k,t,d){const s=performance.now();const f=n=>{const p=Math.min((n-s)/d,1),e=1-Math.pow(1-p,3);this.setState({[k]:Math.round(e*t)});if(p<1)this._rafs.push(requestAnimationFrame(f));};this._rafs.push(requestAnimationFrame(f));}
+  _toast(m){this.setState({toast:m});setTimeout(()=>this.setState({toast:null}),2600);}
+  _setTheme(i){const T=THEMES[i];this._themeColor=T.hex;this._themeRgb=T.rgb;document.documentElement.style.setProperty('--ac',T.hex);document.documentElement.style.setProperty('--acr',T.rgb);this.setState({themeIdx:i});saveSharedTheme(T.id);this._toast('🎨 ธีม '+T.label);}
+
+  // ── แถบพูด/พิมพ์สั่งงาน (เหมือนหน้าหลัก TAWEE) — สลับหน้าในแดชบอร์ดนี้ หรือกลับ/ไปหน้าอื่นได้ ──
+  // MediaRecorder + Worker /transcribe — เลิกใช้ browser SpeechRecognition ที่ค้างได้ไม่แจ้งเตือน
+  toggleVoice(){
+    if(this.state.voiceListening){
+      if(this._voiceInput) this._voiceInput.stop(false);
+      return;
+    }
+    if(!window.TaweeVoiceInput){ this.setState({cmdMsg:'โมดูลไมโครโฟนโหลดไม่สำเร็จ'}); return; }
+    if(!this._voiceInput) this._voiceInput = new TaweeVoiceInput();
+    this._voiceInput.start({
+      onStateChange: (state)=>{
+        if(state==='listening') this.setState({voiceListening:true, cmdMsg:'กำลังฟัง...'});
+        else if(state==='processing_stt') this.setState({cmdMsg:'กำลังแปลงเสียง...'});
+        else if(state==='idle') this.setState({voiceListening:false});
+      },
+      onTranscript: (text)=>{ this.handleCommand(text); },
+      onError: (err)=>{ this.setState({voiceListening:false, cmdMsg: err.message || 'ไม่ได้ยิน ลองพูดอีกครั้ง'}); },
+    });
+  }
+
+  submitText(){
+    const el = this.textInputRef.current;
+    const text = (el && el.value || '').trim();
+    if(!text) return;
+    this.handleCommand(text);
+    if(el) el.value = '';
+  }
+
+  onTextKeyDown(e){
+    if(e.key === 'Enter') this.submitText();
+  }
+
+  handleCommand(text){
+    const t = (text||'').toLowerCase();
+
+    // "กลับ" เพียงคำเดียวก็พอ — STT ไทยมักฟังคำท้ายๆ อย่าง "หน้าหลัก"/"โรส" ไม่ชัด
+    if(/กลับ|หน้าหลัก/.test(t)){
+      this.setState({cmdMsg:'กำลังกลับไปหน้าหลัก TAWEE ค่ะ'});
+      this.speak('กำลังกลับไปหน้าหลัก TAWEE ค่ะ');
+      setTimeout(()=>{ window.location.href='../index.html'; }, 900);
+      return;
+    }
+    if(/การเงิน|finance|หุ้น|เทรด|ลงทุน/.test(t)){
+      this.setState({cmdMsg:'กำลังเปิด Dashboard สายการเงินค่ะ'});
+      this.speak('กำลังเปิด Dashboard สายการเงินค่ะ');
+      setTimeout(()=>{ window.location.href=encodeURI('../AI Agent สายการเงิน Dashboard/Finance AI Dashboard.dc.html'); }, 900);
+      return;
+    }
+
+    const navMap = [
+      {re:/ภาพรวม|overview/, nav:'overview', label:'ภาพรวม'},
+      {re:/รูปภาพ|image/,    nav:'image',    label:'Image Creator'},
+      {re:/บทความ|เขียน|content/, nav:'content', label:'Content Writer'},
+      {re:/วิดีโอ|video/,     nav:'video',    label:'Video Flow'},
+      {re:/โพสต์|โพส|เฟซบุ๊ก|facebook/, nav:'facebook', label:'Facebook Post'},
+      {re:/โฆษณา|ads/,        nav:'ads',      label:'Ad Analytics'},
+      {re:/ประวัติ|history/,  nav:'history',  label:'ประวัติ'},
+      {re:/api|ตั้งค่า/,       nav:'api',      label:'API Settings'},
+    ];
+    for(const m of navMap){
+      if(m.re.test(t)){
+        this.setState({activeNav:m.nav, cmdMsg:`เปิดหน้า ${m.label} ให้แล้วค่ะ`});
+        this.speak(`เปิดหน้า ${m.label} ค่ะ`);
+        return;
+      }
+    }
+    this.setState({cmdMsg:'คุณพูดว่า: "'+text+'" — ถ้าไมค์ฟังผิดบ่อย ลองพิมพ์ในช่องข้อความแทนได้ค่ะ'});
+  }
+
+  speak(text){
+    if(window.speakSoniox) window.speakSoniox(text);
+  }
+
+  async _runImage(){
+    const key=localStorage.getItem('tawee_oai');
+    if(!key){this._toast('❌ ตั้งค่า OpenAI Key ก่อนนะคะ');this.setState({activeNav:'api'});return;}
+    const p=this.state.imgPrompt.trim();if(!p){this._toast('กรุณาใส่ prompt ก่อนค่ะ');return;}
+    this.setState({imgRunning:true,lastImage:null});
+    try{
+      const r=await fetch('https://api.openai.com/v1/images/generations',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'dall-e-3',prompt:p,n:1,size:'1024x1024',quality:'hd'})});
+      const d=await r.json();if(d.error)throw new Error(d.error.message);
+      this.setState({imgRunning:false,lastImage:d.data[0].url,c3:this.state.c3+1});
+      this._addHist('Image Creator','สร้างภาพ "'+p.slice(0,35)+'..." สำเร็จ','#FF2D78');
+      this._toast('✓ สร้างภาพสำเร็จค่ะ!');
+    }catch(e){this.setState({imgRunning:false});this._toast('❌ '+e.message);}
+  }
+  async _runContent(){
+    const key=localStorage.getItem('tawee_cl');
+    if(!key){this._toast('❌ ตั้งค่า Claude Key ก่อนนะคะ');this.setState({activeNav:'api'});return;}
+    const p=this.state.contentPrompt.trim();if(!p){this._toast('กรุณาใส่หัวข้อก่อนค่ะ');return;}
+    this.setState({contentRunning:true,lastContent:''});
+    try{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-5-20250929',max_tokens:800,messages:[{role:'user',content:'เขียน social media content ภาษาไทยสำหรับ: '+p+'\nให้สั้น กระชับ น่าสนใจ เหมาะกับ Facebook ห้ามใช้เครื่องหมาย * หรือ # และห้ามใช้อิโมจิเด็ดขาด ใช้ได้แค่ตัวอักษรและตัวเลขเท่านั้น'}]})});
+      const d=await r.json();if(d.error)throw new Error(d.error.message);
+      this.setState({contentRunning:false,lastContent:d.content[0].text,c3:this.state.c3+1});
+      this._addHist('Content Writer','เขียน Content "'+p.slice(0,30)+'..." สำเร็จ','#8B5CF6');
+      this._toast('✓ เขียน Content สำเร็จค่ะ!');
+    }catch(e){this.setState({contentRunning:false});this._toast('❌ '+e.message);}
+  }
+  async _runFacebook(){
+    const token=localStorage.getItem('tawee_fb_t');
+    if(!token){this._toast('❌ ตั้งค่า Facebook Token ก่อนนะคะ');this.setState({activeNav:'api'});return;}
+    const msg=this.state.fbText.trim();if(!msg){this._toast('กรุณาใส่ข้อความก่อนค่ะ');return;}
+    this.setState({fbRunning:true});
+    try{
+      const imgUrl=this.state.fbImageUrl.trim()||this.state.lastImage;
+      const ep=imgUrl?`https://graph.facebook.com/me/photos`:`https://graph.facebook.com/me/feed`;
+      const body={access_token:token,message:msg};if(imgUrl)body.url=imgUrl;
+      const r=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const d=await r.json();if(d.error)throw new Error(d.error.message);
+      this.setState({fbRunning:false,fbText:'',c3:this.state.c3+1});
+      this._addHist('Facebook Post','โพสต์ไปยัง Page สำเร็จ (ID: '+d.id+')','#3B82F6');
+      this._toast('✓ โพสต์ Facebook สำเร็จค่ะ!');
+    }catch(e){this.setState({fbRunning:false});this._toast('❌ '+e.message);}
+  }
+  async _runVideo(){
+    const url=localStorage.getItem('tawee_flow');
+    if(!url){this._toast('❌ ตั้งค่า Flow Webhook URL ก่อนนะคะ');this.setState({activeNav:'api'});return;}
+    const desc=this.state.videoDesc.trim();if(!desc){this._toast('กรุณาใส่คำอธิบายก่อนค่ะ');return;}
+    this.setState({videoRunning:true});
+    try{
+      await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({description:desc,script:this.state.videoScript,imageUrl:this.state.lastImage,timestamp:new Date().toISOString(),source:'TAWEE'})});
+      this.setState({videoRunning:false,c3:this.state.c3+1});
+      this._addHist('Video Flow','ส่ง Flow "'+desc.slice(0,30)+'" สำเร็จ','#F59E0B');
+      this._toast('✓ ส่ง Flow สำเร็จค่ะ!');
+    }catch(e){this.setState({videoRunning:false});this._toast('❌ Connection failed: '+e.message);}
+  }
+
+  async _testOpenAI(){
+    const key=document.getElementById('oai-key')?.value;if(!key){this._toast('กรุณาใส่ API Key ก่อนค่ะ');return;}
+    this._toast('⏳ กำลังทดสอบ...');
+    try{const r=await fetch('https://api.openai.com/v1/models',{headers:{'Authorization':'Bearer '+key}});const d=await r.json();if(d.error)throw new Error(d.error.message);localStorage.setItem('tawee_oai',key);this.setState(s=>({apiStatus:{...s.apiStatus,openai:true}}));this._toast('✓ OpenAI เชื่อมต่อสำเร็จ!');}
+    catch(e){this._toast('❌ '+e.message);}
+  }
+  async _testClaude(){
+    const key=document.getElementById('cl-key')?.value;if(!key){this._toast('กรุณาใส่ API Key ก่อนค่ะ');return;}
+    this._toast('⏳ กำลังทดสอบ...');
+    try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-3-5-haiku-20241022',max_tokens:10,messages:[{role:'user',content:'Hi'}]})});const d=await r.json();if(d.error)throw new Error(d.error.message);localStorage.setItem('tawee_cl',key);this.setState(s=>({apiStatus:{...s.apiStatus,claude:true}}));this._toast('✓ Claude เชื่อมต่อสำเร็จ!');}
+    catch(e){this._toast('❌ '+e.message);}
+  }
+  async _testFB(){
+    const token=document.getElementById('fb-token')?.value;
+    if(!token){this._toast('กรุณาใส่ Token ก่อนค่ะ');return;}
+    this._toast('⏳ กำลังทดสอบ...');
+    try{const r=await fetch(`https://graph.facebook.com/me?fields=name&access_token=${token}`);const d=await r.json();if(d.error)throw new Error(d.error.message);localStorage.setItem('tawee_fb_t',token);this.setState(s=>({apiStatus:{...s.apiStatus,fb:true}}));this._toast('✓ Facebook Page: '+d.name);}
+    catch(e){this._toast('❌ '+e.message);}
+  }
+  async _testFlow(){
+    const url=document.getElementById('flow-url')?.value;if(!url){this._toast('กรุณาใส่ URL ก่อนค่ะ');return;}
+    this._toast('⏳ กำลังทดสอบ...');
+    try{await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({test:true})});}catch(e){}
+    localStorage.setItem('tawee_flow',url);this.setState(s=>({apiStatus:{...s.apiStatus,flow:true}}));this._toast('✓ บันทึก Webhook URL แล้วค่ะ');
+  }
+  _saveField(id,key,statusKey){const el=document.getElementById(id);if(!el?.value){this._toast('กรุณาใส่ค่าก่อนค่ะ');return;}localStorage.setItem(key,el.value);if(statusKey)this.setState(s=>({apiStatus:{...s.apiStatus,[statusKey]:true}}));this._toast('✓ บันทึกแล้วค่ะ');}
+
+  _addHist(agent,msg,color){
+    const h={agent,time:new Date().toLocaleTimeString('th',{hour:'2-digit',minute:'2-digit'}),msg,status:'✓',dot:{width:'8px',height:'8px',borderRadius:'50%',background:color,flexShrink:0,marginTop:'4px'},badge:{background:'rgba(52,211,153,.15)',color:'#34D399',borderRadius:'20px',padding:'2px 8px',font:"700 9px 'Space Mono'"}};
+    this.setState(s=>({histItems:[h,...s.histItems.slice(0,19)],c1:s.c1+1}));
+  }
+
+  _initOrb(){
+    const el=document.getElementById('main-orb');if(!el)return;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    el.width=148*dpr;el.height=148*dpr;
+    const ctx=el.getContext('2d');ctx.scale(dpr,dpr);
+    const cx=74,cy=74;
+    const pts=Array.from({length:120},()=>({a:Math.random()*Math.PI*2,br:12+Math.random()*46,dr:Math.random()*Math.PI*2,da:Math.random()*8+2,ds:Math.random()*.02+.004,sp:(Math.random()>.5?1:-1)*(Math.random()*.008+.002),sz:Math.random()*2.4+.3,al:Math.random()*.55+.15,h:Math.random()}));
+    const rings=[{p:0,s:.008,br:30},{p:2.1,s:.006,br:44},{p:4.2,s:.01,br:20}];
+    let t=0;
+    const draw=()=>{
+      ctx.clearRect(0,0,148,148);t+=.013;
+      const rgb=this._themeRgb||'255,45,120';
+      ctx.beginPath();
+      for(let i=0;i<=120;i++){const a=(i/120)*Math.PI*2;const n=Math.sin(a*2+t*.9)*7+Math.sin(a*4-t*1.3)*4.5+Math.sin(a*8+t*.6)*2.5;const r=60+n;i===0?ctx.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r):ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);}
+      ctx.closePath();ctx.strokeStyle=`rgba(${rgb},${.25+Math.sin(t*.7)*.09})`;ctx.lineWidth=1.5;ctx.stroke();
+      const fill=ctx.createRadialGradient(cx,cy,0,cx,cy,60);fill.addColorStop(0,`rgba(${rgb},.13)`);fill.addColorStop(1,'transparent');ctx.fillStyle=fill;ctx.fill();
+      rings.forEach(r=>{r.p+=r.s;ctx.beginPath();ctx.arc(cx,cy,r.br+Math.sin(r.p)*10,0,Math.PI*2);ctx.strokeStyle=`rgba(${rgb},${(.5+Math.sin(r.p)*.5)*.09})`;ctx.lineWidth=1;ctx.stroke();});
+      const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,20);cg.addColorStop(0,'rgba(255,245,250,.97)');cg.addColorStop(.3,`rgba(${rgb},.6)`);cg.addColorStop(1,'transparent');
+      ctx.beginPath();ctx.arc(cx,cy,20,0,Math.PI*2);ctx.fillStyle=cg;ctx.fill();
+      ctx.beginPath();ctx.arc(cx,cy,7+Math.sin(t*2.2)*1.5,0,Math.PI*2);ctx.fillStyle='rgba(255,248,252,.95)';ctx.fill();
+      pts.forEach(p=>{p.a+=p.sp;p.dr+=p.ds;const r=p.br+Math.sin(p.dr)*p.da;const x=cx+Math.cos(p.a)*r,y=cy+Math.sin(p.a)*r;const al=p.al*(0.45+0.55*Math.abs(Math.sin(p.dr*1.6)));ctx.beginPath();ctx.arc(x,y,p.sz,0,Math.PI*2);ctx.fillStyle=`rgba(${p.h>.72?'139,92,246':rgb},${al})`;ctx.fill();});
+      this._rafs.push(requestAnimationFrame(draw));
+    };draw();
+  }
+  _initBg(){
+    const el=document.getElementById('bg-cv');if(!el)return;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    el.width=window.innerWidth*dpr;el.height=window.innerHeight*dpr;
+    const ctx=el.getContext('2d');ctx.scale(dpr,dpr);
+    const W=window.innerWidth,H=window.innerHeight;
+    const pts=Array.from({length:48},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.2,r:Math.random()*1.6+.3,al:Math.random()*.12+.03,c:Math.floor(Math.random()*3)}));
+    const gd=[];for(let x=48;x<W;x+=48)for(let y=48;y<H;y+=48)gd.push({x,y});
+    const draw=()=>{
+      ctx.clearRect(0,0,W,H);const rgb=this._themeRgb||'255,45,120';
+      ctx.fillStyle='rgba(255,255,255,0.014)';gd.forEach(d=>{ctx.beginPath();ctx.arc(d.x,d.y,1,0,Math.PI*2);ctx.fill();});
+      pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;const c=p.c===0?rgb:p.c===1?'139,92,246':'255,255,255';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${c},${p.al})`;ctx.fill();});
+      this._rafs.push(requestAnimationFrame(draw));
+    };draw();
+  }
+
+  renderVals(){
+    const {c1,c2,c3,c4,time,activeNav,grpAI,grpSocial,themeIdx,apiStatus,imgRunning,imgPrompt,lastImage,contentRunning,contentPrompt,lastContent,fbRunning,fbText,fbImageUrl,videoRunning,videoDesc,videoScript,showAvatar,toast,histItems,voiceListening,cmdMsg}=this.state;
+    const T=THEMES[themeIdx];const ac=T.hex;const acr=T.rgb;const sec=T.sec;
+
+    const micStyleCmd={
+      width:'44px',height:'44px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+      cursor:'pointer',flexShrink:0,fontSize:'18px',
+      background:voiceListening?'linear-gradient(135deg,#f43f5e,#b91c3c)':`linear-gradient(135deg,${ac},${sec})`,
+      boxShadow:voiceListening?'0 0 22px rgba(244,63,94,0.55)':`0 0 16px ${ac}66`,
+      animation:voiceListening?'pulse-dot 1s ease-in-out infinite':'none',
+      transition:'all 0.25s',
+    };
+
+    // nav item factory
+    const ni=(n)=>({display:'flex',alignItems:'center',gap:'8px',padding:'8px 9px',borderRadius:'8px',cursor:'pointer',marginBottom:'2px',borderLeft:activeNav===n?`2px solid ${ac}`:'2px solid transparent',background:activeNav===n?`rgba(${acr},.12)`:'transparent',transition:'.15s'});
+    const ic=(n)=>({color:activeNav===n?ac:'rgba(255,255,255,.32)',flexShrink:0});
+    const nl=(n)=>({font:`${activeNav===n?'600':'500'} 13px 'Space Grotesk'`,color:activeNav===n?ac:'rgba(255,255,255,.5)',flex:'1'});
+    const rb=(ok)=>({background:ok?'rgba(52,211,153,.15)':'rgba(255,107,107,.14)',color:ok?'#34D399':'#FF6B6B',borderRadius:'20px',padding:'2px 7px',font:"700 9px 'Space Mono'",marginLeft:'auto',flexShrink:0,whiteSpace:'nowrap'});
+    const chev=(open)=>({transition:'transform .2s',transform:open?'rotate(180deg)':'rotate(0deg)',flexShrink:0});
+    const dotSt=(i,c)=>({width:'17px',height:'17px',borderRadius:'50%',background:c,cursor:'pointer',transition:'.2s',boxShadow:themeIdx===i?`0 0 0 2px #0C0C10,0 0 0 4px ${c}`:'none',flexShrink:0});
+    const badge=(run,c)=>({background:run?c+'28':c+'1A',color:c,borderRadius:'20px',padding:'4px 11px',font:"700 10px 'Space Mono'",whiteSpace:'nowrap',border:run?`1px solid ${c}55`:`1px solid ${c}30`});
+    const aCard=(c)=>({background:'#131320',border:`1px solid rgba(255,255,255,.07)`,borderLeft:`3px solid ${c}`,borderRadius:'14px',padding:'17px',display:'flex',flexDirection:'column',gap:'9px',animation:'fin .45s ease both'});
+    const rowProg=(c)=>({width:'100%',height:'100%',background:`linear-gradient(90deg,${c},${c}99)`,borderRadius:'4px'});
+    const aIc=(c)=>({width:'36px',height:'36px',borderRadius:'10px',background:c+'18',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0});
+    const runBtn=(run,c,txt,rtxt)=>({background:run?c+'1A':c,color:run?c:'#fff',borderRadius:'9px',padding:'9px 16px',font:"700 13px 'Space Grotesk'",cursor:run?'default':'pointer',whiteSpace:'nowrap',flexShrink:0,opacity:run?.65:1,border:run?`1px solid ${c}40`:'none'});
+    const runBtnW=(run,c)=>({background:run?c+'1A':c,color:run?c:'#fff',borderRadius:'9px',padding:'10px',font:"700 13px 'Space Grotesk'",cursor:run?'default':'pointer',textAlign:'center',marginTop:'6px',opacity:run?.65:1,border:run?`1px solid ${c}40`:'none'});
+    const cn=(ok)=>({background:ok?'rgba(52,211,153,.15)':'rgba(255,255,255,.06)',color:ok?'#34D399':'rgba(255,255,255,.4)',borderRadius:'20px',padding:'5px 12px',font:"700 10px 'Space Mono'",whiteSpace:'nowrap',flexShrink:0});
+    const sc={background:'#131320',border:'1px solid rgba(255,255,255,.07)',borderRadius:'12px',padding:'16px 18px',animation:'fin .4s ease both'};
+    const sn=(c)=>({font:"700 30px 'Space Grotesk'",color:c,lineHeight:'1',marginBottom:'5px'});
+    const sl={font:"400 10px 'Space Mono'",color:'rgba(255,255,255,.3)',letterSpacing:'.12em',textTransform:'uppercase'};
+    const inp={background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.1)',borderRadius:'9px',padding:'9px 13px',font:"400 13px 'Space Grotesk'",outline:'none',flex:'1',color:'#F0F0F5'};
+    const ta={...inp,flex:'unset',width:'100%',resize:'none'};
+    const acard={background:'#16162A',border:'1px solid rgba(255,255,255,.08)',borderRadius:'14px',padding:'18px',animation:'fin .45s ease both'};
+    const ainp={background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',borderRadius:'9px',padding:'10px 14px',font:"400 13px 'Space Grotesk'",outline:'none',flex:'1',color:'#F0F0F5'};
+    const tbtn={padding:'10px 16px',border:'1px solid rgba(255,255,255,.14)',borderRadius:'9px',font:"600 12px 'Space Grotesk'",color:'rgba(255,255,255,.6)',cursor:'pointer',whiteSpace:'nowrap',flexShrink:0};
+    const sbtn={padding:'10px 18px',background:`linear-gradient(135deg,${ac},${sec})`,borderRadius:'9px',font:"700 12px 'Space Grotesk'",color:'#fff',cursor:'pointer',whiteSpace:'nowrap',flexShrink:0};
+    const apiCnt=Object.values(apiStatus).filter(Boolean).length;
+    const pageTitles={overview:'ภาพรวม',image:'Image Creator',content:'Content Writer',facebook:'Facebook Post',video:'Video Flow',ads:'Ad Analytics',api:'API Settings',history:'ประวัติ'};
+    const tvOv=activeNav==='overview';
+
+    return {
+      c1,c2,c3,c4,c4d:'฿'+c4,time,toast,grpAI,grpSocial,showAvatar,lastImage,lastContent,
+      imgRunning,imgPrompt,contentRunning,contentPrompt,fbRunning,fbText,fbImageUrl,videoRunning,videoDesc,videoScript,
+      apiStatus,histItems,
+      tvOverview:tvOv,tvApi:activeNav==='api',tvHistory:activeNav==='history',
+      tvImage:activeNav==='image',tvContent:activeNav==='content',tvFacebook:activeNav==='facebook',tvVideo:activeNav==='video',tvAds:activeNav==='ads',
+      rowImg:aCard('#FF2D78'),rowCont:aCard('#8B5CF6'),rowFb:aCard('#3B82F6'),rowVid:aCard('#F59E0B'),
+      rowProgImg:rowProg('#FF2D78'),rowProgCont:rowProg('#8B5CF6'),rowProgFb:rowProg('#3B82F6'),rowProgVid:rowProg('#F59E0B'),
+      ovBtnImg:runBtn(imgRunning,'#FF2D78'),ovTxtImg:imgRunning?'กำลังทำงาน...':'เปิดการทำงาน',
+      ovBtnCont:runBtn(contentRunning,'#8B5CF6'),ovTxtCont:contentRunning?'กำลังทำงาน...':'เปิดการทำงาน',
+      ovBtnFb:runBtn(fbRunning,'#3B82F6'),ovTxtFb:fbRunning?'กำลังทำงาน...':'เปิดการทำงาน',
+      ovBtnVid:runBtn(videoRunning,'#F59E0B'),ovTxtVid:videoRunning?'กำลังทำงาน...':'เปิดการทำงาน',
+      pageTitle:pageTitles[activeNav]||'TAWEE',
+      apiCntTxt:apiCnt+'/4 APIs',apiCntSt:{background:apiCnt===4?'rgba(52,211,153,.15)':'rgba(255,255,255,.06)',color:apiCnt===4?'#34D399':'rgba(255,255,255,.4)',borderRadius:'20px',padding:'5px 12px',font:"700 10px 'Space Mono'"},
+
+      // nav styles (pre-computed, no function calls in template)
+      navOv:ni('overview'),niOv:ic('overview'),nlOv:nl('overview'),
+      navImg:ni('image'),niImg:ic('image'),nlImg:nl('image'),
+      navCont:ni('content'),niCont:ic('content'),nlCont:nl('content'),
+      navVid:ni('video'),niVid:ic('video'),nlVid:nl('video'),
+      navFb:ni('facebook'),niFb:ic('facebook'),nlFb:nl('facebook'),
+      navAd:ni('ads'),niAd:ic('ads'),nlAd:nl('ads'),
+      navApiSt:ni('api'),niApi:ic('api'),nlApi:nl('api'),
+      navHist:ni('history'),niHist:ic('history'),nlHist:nl('history'),
+
+      chevAI:chev(grpAI),chevSoc:chev(grpSocial),
+
+      // run badges (sidebar)
+      rbOAI:rb(apiStatus.openai),rbOAItxt:apiStatus.openai?'API ✓':'ไม่มี Key',
+      rbCl:rb(apiStatus.claude),rbCltxt:apiStatus.claude?'API ✓':'ไม่มี Key',
+      rbFlow:rb(apiStatus.flow),rbFlowtxt:apiStatus.flow?'API ✓':'ไม่มี Key',
+      rbFb:rb(apiStatus.fb),rbFbtxt:apiStatus.fb?'API ✓':'ไม่มี Key',
+
+      // theme dots
+      dot0:dotSt(0,THEMES[0].hex),dot1:dotSt(1,THEMES[1].hex),dot2:dotSt(2,THEMES[2].hex),dot3:dotSt(3,THEMES[3].hex),dot4:dotSt(4,THEMES[4].hex),
+
+      // logo + status
+      logoDot:{width:'9px',height:'9px',borderRadius:'50%',background:ac,flexShrink:0,animation:'pulse-dot 2.2s ease-in-out infinite',boxShadow:`0 0 10px ${ac}`},
+      statusDot:{width:'5px',height:'5px',borderRadius:'50%',background:ac,flexShrink:0,animation:'pulse-dot 1.8s ease-in-out infinite'},
+      chatBtnSt:{background:`linear-gradient(135deg,${ac},${sec})`,borderRadius:'11px',padding:'12px',textAlign:'center',cursor:'pointer',font:"700 13px 'Space Grotesk'",color:'#fff',letterSpacing:'.03em',boxShadow:`0 4px 22px ${ac}55`,display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'},
+      avCircle:{width:'32px',height:'32px',borderRadius:'50%',background:`linear-gradient(135deg,${ac},${sec})`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0},
+      avBtnSt:{width:'32px',height:'32px',borderRadius:'50%',background:`linear-gradient(135deg,${ac},${sec})`,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',font:"700 13px 'Space Grotesk'",color:'#fff',flexShrink:0},
+
+      // stats
+      sc,sn1:sn(ac),sn2:sn(sec),sn3:sn('#34D399'),sn4:sn('#F59E0B'),sl,
+
+      // agent cards (pre-computed)
+      cardImg:aCard('#FF2D78'),icImg:aIc('#FF2D78'),
+      cardCont:aCard('#8B5CF6'),icCont:aIc('#8B5CF6'),
+      cardFb:aCard('#3B82F6'),icFb:aIc('#3B82F6'),
+      cardVid:aCard('#F59E0B'),icVid:aIc('#F59E0B'),
+
+      // status badges (pre-computed based on running state)
+      badImg:badge(imgRunning,'#FF2D78'),badImgTxt:imgRunning?'กำลังสร้าง':'พร้อม',
+      badCont:badge(contentRunning,'#8B5CF6'),badContTxt:contentRunning?'กำลังเขียน':'พร้อม',
+      badFb:badge(fbRunning,'#3B82F6'),badFbTxt:fbRunning?'กำลังโพสต์':'พร้อม',
+      badVid:badge(videoRunning,'#F59E0B'),badVidTxt:videoRunning?'กำลังส่ง':'พร้อม',
+
+      // progress bars
+      progImg:{width:'100%',height:'100%',background:`linear-gradient(90deg,${ac},${sec})`,borderRadius:'4px'},
+
+      // run buttons (pre-computed)
+      rnImgSt:runBtn(imgRunning,'#FF2D78'),rnImgTxt:imgRunning?'..':'สร้าง',
+      rnContSt:runBtn(contentRunning,'#8B5CF6'),rnContTxt:contentRunning?'..':'เขียน',
+      rnFbSt:runBtnW(fbRunning,'#3B82F6'),rnFbTxt:fbRunning?'กำลังโพสต์...':'โพสต์เลย',
+      rnVidSt:runBtnW(videoRunning,'#F59E0B'),rnVidTxt:videoRunning?'กำลังส่ง...':'ส่งไปยัง Flow',
+
+      // inputs
+      inp,ta,apiInp:ainp,
+      apiCard:acard,testBtnSt:tbtn,saveBtnSt:sbtn,
+
+      // connection badges (api settings)
+      cnOAI:cn(apiStatus.openai),cnOAItxt:apiStatus.openai?'✓ เชื่อมต่อแล้ว':'ยังไม่เชื่อมต่อ',
+      cnCl:cn(apiStatus.claude),cnCltxt:apiStatus.claude?'✓ เชื่อมต่อแล้ว':'ยังไม่เชื่อมต่อ',
+      cnFb:cn(apiStatus.fb),cnFbtxt:apiStatus.fb?'✓ เชื่อมต่อแล้ว':'ยังไม่เชื่อมต่อ',
+      cnFlow:cn(apiStatus.flow),cnFlowtxt:apiStatus.flow?'✓ เชื่อมต่อแล้ว':'ยังไม่เชื่อมต่อ',
+
+      // handlers
+      navDash:()=>this.setState({activeNav:'overview'}),
+      navImage:()=>this.setState({activeNav:'image'}),
+      navContent:()=>this.setState({activeNav:'content'}),
+      navVideo:()=>this.setState({activeNav:'video'}),
+      navFacebook:()=>this.setState({activeNav:'facebook'}),
+      navAds:()=>this.setState({activeNav:'ads'}),
+      navApi:()=>this.setState({activeNav:'api'}),
+      navHistory:()=>this.setState({activeNav:'history'}),
+      toggleAI:()=>this.setState(s=>({grpAI:!s.grpAI})),
+      toggleSoc:()=>this.setState(s=>({grpSocial:!s.grpSocial})),
+      th0:()=>this._setTheme(0),th1:()=>this._setTheme(1),th2:()=>this._setTheme(2),th3:()=>this._setTheme(3),th4:()=>this._setTheme(4),
+      goToTawee:()=>{window.location.href='../index.html';},
+      voiceListening,cmdMsg,micStyleCmd,
+      textInputRef:this.textInputRef,
+      toggleVoice:()=>this.toggleVoice(),
+      submitText:()=>this.submitText(),
+      onTextKeyDown:(e)=>this.onTextKeyDown(e),
+      toggleAvatar:()=>this.setState(s=>({showAvatar:!s.showAvatar})),
+      closeAvatar:()=>this.setState({showAvatar:false}),
+      goApiSettings:()=>this.setState({activeNav:'api',showAvatar:false}),
+      setImgPrompt:(e)=>this.setState({imgPrompt:e.target.value}),
+      setContentPrompt:(e)=>this.setState({contentPrompt:e.target.value}),
+      setFbText:(e)=>this.setState({fbText:e.target.value}),
+      setFbImageUrl:(e)=>this.setState({fbImageUrl:e.target.value}),
+      setVideoDesc:(e)=>this.setState({videoDesc:e.target.value}),
+      setVideoScript:(e)=>this.setState({videoScript:e.target.value}),
+      runImage:()=>this._runImage(),
+      runContent:()=>this._runContent(),
+      runFacebook:()=>this._runFacebook(),
+      runVideo:()=>this._runVideo(),
+      testOAI:()=>this._testOpenAI(),testCl:()=>this._testClaude(),testFB:()=>this._testFB(),testFlow:()=>this._testFlow(),
+      saveOAI:()=>this._saveField('oai-key','tawee_oai','openai'),
+      saveCl:()=>this._saveField('cl-key','tawee_cl','claude'),
+      saveFB:()=>this._saveField('fb-token','tawee_fb_t','fb'),
+      saveFlow:()=>this._saveField('flow-url','tawee_flow','flow'),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

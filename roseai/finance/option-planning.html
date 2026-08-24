@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option Planning</title>
+    <script>window.TAWEE_TTS_PAGE = 'option-planning';</script>
+    <script src="../soniox-tts.js"></script>
+    <script src="../tawee-voice-input.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        body { background: #0a0a0f; color: #e2e8f0; font-family: 'DM Sans', sans-serif; }
+        .container { max-width: 100%; margin: 0 auto; padding: 0 12px 96px; }
+
+        /* ── Tool Wrapper ── */
+        .tool-wrapper {
+            background: var(--bg-soft, #111118);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border, #1e1e2e);
+            margin: 12px auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* ── Asset Selector ── */
+        .asset-selector { margin-bottom: 20px; }
+
+        .asset-selector > label {
+            display: block;
+            font-size: 13px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .asset-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .asset-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border, #1e1e2e);
+            background: var(--bg, #0a0a0f);
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .asset-btn:hover { border-color: var(--purple, #7c3aed); color: #e2e8f0; }
+
+        .asset-btn.active { border-color: var(--purple, #7c3aed); background: rgba(124,58,237,0.2); color: #fff; box-shadow: 0 0 15px rgba(124,58,237,0.3); }
+        .asset-btn.gold.active   { border-color: #f59e0b; background: rgba(245,158,11,0.15); box-shadow: 0 0 15px rgba(245,158,11,0.2); }
+        .asset-btn.crypto.active { border-color: #f97316; background: rgba(249,115,22,0.15); box-shadow: 0 0 15px rgba(249,115,22,0.2); }
+        .asset-btn.set50.active  { border-color: #3b82f6; background: rgba(59,130,246,0.15); box-shadow: 0 0 15px rgba(59,130,246,0.2); }
+        .asset-btn.usd.active    { border-color: #10b981; background: rgba(16,185,129,0.15); box-shadow: 0 0 15px rgba(16,185,129,0.2); }
+        .asset-btn.usstock.active{ border-color: #ef4444; background: rgba(239,68,68,0.15);  box-shadow: 0 0 15px rgba(239,68,68,0.2); }
+
+        .asset-btn .icon { font-size: 18px; }
+
+        .asset-info {
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: var(--bg, #0a0a0f);
+            border-radius: 8px;
+            border: 1px solid var(--border, #1e1e2e);
+            font-size: 13px;
+            color: #64748b;
+            display: none;
+        }
+        .asset-info.show { display: block; }
+        .asset-info span { color: #94a3b8; }
+
+        /* ── Grid Inputs ── */
+        .grid-inputs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--bg, #0a0a0f);
+            border-radius: 8px;
+            border: 1px solid var(--border, #1e1e2e);
+            flex-wrap: wrap;
+        }
+
+        .grid-inputs .input-group { flex: 1; min-width: 150px; text-align: left; }
+        .grid-inputs .input-group label { display: block; margin-bottom: 8px; font-size: 13px; color: #64748b; }
+        .grid-inputs .input-group input {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-soft, #111118);
+            border: 1px solid var(--border, #1e1e2e);
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+        .grid-inputs .input-group input:focus { outline: none; border-color: var(--purple, #7c3aed); }
+
+        /* ── Size Buttons ── */
+        .btn-size-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-size {
+            padding: 10px 18px;
+            background: var(--bg, #0a0a0f);
+            border: 1px solid var(--border, #1e1e2e);
+            color: #e2e8f0;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        .btn-size:hover { background: rgba(124,58,237,0.2); }
+        .btn-size.active { background: var(--purple, #7c3aed); box-shadow: 0 0 15px rgba(124,58,237,0.5); }
+
+        /* ── Table ── */
+        .scroll-table { overflow-x: auto; margin-top: 20px; }
+
+        .tool-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+
+        .tool-table th {
+            text-align: left;
+            padding: 14px 15px;
+            border-bottom: 2px solid #1e2035;
+            color: #475569;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tool-table td { padding: 12px 15px; border-bottom: 1px solid #1a1a2a; font-size: 14px; }
+        .tool-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .master-input {
+            background: #0d0d1a !important;
+            border: 1px solid #3b82f6 !important;
+            text-align: center;
+            font-weight: bold;
+            width: 90px;
+            padding: 8px;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .master-input:focus { outline: none; border-color: #a855f7 !important; }
+
+        .readonly-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            text-align: center;
+            width: 90px;
+            pointer-events: none;
+            font-size: 14px;
+        }
+
+        select.strategy-select {
+            background: var(--bg, #0a0a0f);
+            color: #475569;
+            border: 1px solid #1e2035;
+            padding: 8px 10px;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 13px;
+            transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+        select.strategy-select:focus { outline: none; }
+        select.strategy-select.selected { color: #a855f7; border-color: #7c3aed; box-shadow: 0 0 10px rgba(124,58,237,0.25); }
+
+        /* ── Summary ── */
+        .summary-box {
+            margin-top: 24px;
+            padding: 20px;
+            background: var(--bg, #0a0a0f);
+            border-radius: 8px;
+            border: 1px solid var(--border, #1e1e2e);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .summary-left { color: #64748b; font-size: 14px; }
+        .summary-left .asset-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(124,58,237,0.2);
+            color: #a855f7;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .total-label { color: #94a3b8; font-size: 15px; margin-bottom: 6px; display: block; }
+        .total-amount { color: #10b981; font-size: 32px; font-weight: 800; }
+        .total-unit   { color: #475569; font-size: 14px; margin-left: 6px; }
+
+        /* ── Flow Steps ── */
+        .flow-steps {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: var(--bg, #0a0a0f);
+            border: 1px solid var(--border, #1e1e2e);
+            border-radius: 7px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .flow-step-num {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: var(--purple, #7c3aed);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .flow-arrow { color: #334155; align-self: center; }
+
+        .txt-right   { text-align: right; }
+        .txt-center  { text-align: center; }
+
+        .section-label {
+            margin-bottom: 8px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.4); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
+
+        /* ── การ์ดสั่งงานด้วยเสียง/พิมพ์ — ลอยกะทัดรัด กึ่งกลางล่าง เหมือนหน้า Payoff Chart ── */
+        @keyframes taweePlanVoicePulse { 0%,100%{ box-shadow:0 0 0 0 rgba(124,58,237,.5); } 50%{ box-shadow:0 0 0 10px rgba(124,58,237,0); } }
+        .tawee-voice-dock {
+            position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 400;
+            display: flex; flex-direction: column; gap: 5px;
+            width: 460px; max-width: calc(100vw - 32px);
+            padding: 9px 12px;
+            background: #14141f; border: 1px solid #262640; border-radius: 16px;
+            box-shadow: 0 18px 44px rgba(0,0,0,.5);
+        }
+        .tawee-voice-row { display: flex; align-items: center; gap: 8px; }
+        .tawee-voice-mic {
+            flex-shrink: 0; width: 34px; height: 34px; border-radius: 11px; border: none; cursor: pointer;
+            background: linear-gradient(155deg, #7c3aed, #9d6ef5);
+            color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(124,58,237,.4);
+            transition: transform .15s cubic-bezier(.2,.8,.3,1.4);
+        }
+        .tawee-voice-mic:hover { transform: scale(1.07); }
+        .tawee-voice-mic.listening { animation: taweePlanVoicePulse 1.3s ease-in-out infinite; }
+        .tawee-voice-input-wrap {
+            flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 4px 4px 4px 12px;
+            border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid #1e1e2e;
+        }
+        .tawee-voice-input-wrap input {
+            flex: 1; min-width: 0; background: transparent; border: none; color: #e2e8f0;
+            font-size: 12px; padding: 6px 0; font-family: 'DM Sans', sans-serif;
+        }
+        .tawee-voice-input-wrap input:focus { outline: none; }
+        .tawee-voice-send {
+            flex-shrink: 0; padding: 7px 13px; border-radius: 9px; border: none; cursor: pointer;
+            background: #7c3aed; color: #fff; font-size: 11.5px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+        }
+        .tawee-voice-send:hover { background: #9d6ef5; }
+        .tawee-voice-caption {
+            font-size: 9.5px; color: #55556a; line-height: 1.3; padding-left: 2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tool-wrapper">
+
+        <!-- Flow Steps -->
+        <div class="flow-steps">
+            <div class="flow-step">
+                <span class="flow-step-num">1</span> เลือกสินทรัพย์
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">
+                <span class="flow-step-num">2</span> กำหนดจำนวนไม้
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">
+                <span class="flow-step-num">3</span> กำหนดกรอบบน-ล่าง
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">
+                <span class="flow-step-num">4</span> กำหนดระยะห่าง Zone
+            </div>
+        </div>
+
+        <!-- Asset Selector -->
+        <div class="asset-selector">
+            <label>① เลือกสินทรัพย์ที่ต้องการวางแผน</label>
+            <div class="asset-buttons">
+                <button class="asset-btn gold"         onclick="selectAsset('gold', this)">
+                    <span class="icon">🥇</span> ทองคำ
+                </button>
+                <button class="asset-btn crypto"       onclick="selectAsset('crypto', this)">
+                    <span class="icon">₿</span> Crypto
+                </button>
+                <button class="asset-btn set50 active" onclick="selectAsset('set50', this)">
+                    <span class="icon">📈</span> SET50
+                </button>
+                <button class="asset-btn usd"          onclick="selectAsset('usd', this)">
+                    <span class="icon">💵</span> USD Future
+                </button>
+                <button class="asset-btn usstock"      onclick="selectAsset('usstock', this)">
+                    <span class="icon">🇺🇸</span> US Stock
+                </button>
+            </div>
+            <div class="asset-info show" id="assetInfo">
+                <span id="assetInfoText">SET50 Index Options — หน่วย: จุด | ขนาดสัญญา: 200 บาท/จุด</span>
+            </div>
+        </div>
+
+        <!-- Zone Inputs -->
+        <div class="section-label">③ กำหนดกรอบบน-ล่าง และระยะห่าง Zone</div>
+        <div class="grid-inputs">
+            <div class="input-group">
+                <label>กรอบบน (Upper Zone)</label>
+                <input type="number" id="topZone" value="4000" oninput="calculate()">
+            </div>
+            <div class="input-group">
+                <label>กรอบล่าง (Lower Zone)</label>
+                <input type="number" id="bottomZone" value="2000" oninput="calculate()">
+            </div>
+            <div class="input-group">
+                <label>ระยะห่างแต่ละไม้ (Default)</label>
+                <input type="number" id="distDefault" value="200" step="1"
+                    oninput="dist = parseFloat(this.value)||0; calculate()">
+            </div>
+        </div>
+
+        <!-- Size Buttons -->
+        <div class="section-label">② กำหนดจำนวนไม้ที่จะเทรด</div>
+        <div class="btn-size-container">
+            <button class="btn-size"        onclick="changeSize(1,  this)"> 1 ไม้</button>
+            <button class="btn-size"        onclick="changeSize(2,  this)"> 2 ไม้</button>
+            <button class="btn-size"        onclick="changeSize(3,  this)"> 3 ไม้</button>
+            <button class="btn-size"        onclick="changeSize(4,  this)"> 4 ไม้</button>
+            <button class="btn-size"        onclick="changeSize(5,  this)"> 5 ไม้</button>
+            <button class="btn-size"        onclick="changeSize(6,  this)"> 6 ไม้</button>
+            <button class="btn-size"        onclick="changeSize(8,  this)"> 8 ไม้</button>
+            <button class="btn-size active" onclick="changeSize(10, this)">10 ไม้</button>
+            <button class="btn-size"        onclick="changeSize(15, this)">15 ไม้</button>
+            <button class="btn-size"        onclick="changeSize(20, this)">20 ไม้</button>
+        </div>
+
+        <!-- Table -->
+        <div class="scroll-table">
+            <table class="tool-table">
+                <thead>
+                    <tr>
+                        <th class="txt-center">ไม้ที่</th>
+                        <th>Asset Price</th>
+                        <th class="txt-center">ระยะห่าง Zone</th>
+                        <th class="txt-center">คลุม Zone</th>
+                        <th>Strategy</th>
+                        <th class="txt-center">Contract Size</th>
+                        <th class="txt-center">ตัวคูณ</th>
+                        <th class="txt-right">ต้นทุน</th>
+                    </tr>
+                </thead>
+                <tbody id="gridTable"></tbody>
+            </table>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary-box">
+            <div class="summary-left">
+                สินทรัพย์: <span class="asset-tag" id="assetTag">SET50</span>
+                <br><br>
+                <span style="font-size:13px">
+                    ไม้ทั้งหมด: <span id="rowCount" style="color:#fff">10</span>
+                    &nbsp;|&nbsp;
+                    ระยะคุม (ไม้แรก): <span id="totalCoverage" style="color:#f59e0b">0</span>
+                </span>
+                <br><br>
+                <span style="font-size:12px; color:#334155;" id="formulaLabel">
+                    สูตร: Size × คลุม Zone × 200 = ต้นทุน (บาท)
+                </span>
+            </div>
+            <div>
+                <span class="total-label">ต้นทุนรวมทั้งหมดที่ใช้คุมโซน</span>
+                <span id="grandTotal" class="total-amount">0</span>
+                <span class="total-unit" id="unitLabel">บาท</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- สั่งงานด้วยเสียง/พิมพ์ — การ์ดลอยกึ่งกลางล่าง เหมือนหน้า Payoff Chart -->
+<div class="tawee-voice-dock">
+    <div class="tawee-voice-row">
+        <button class="tawee-voice-mic" id="voiceFab" title="สั่งงานด้วยเสียง">🎙</button>
+        <div class="tawee-voice-input-wrap">
+            <input type="text" id="voiceTextInput" placeholder='เช่น "เปลี่ยนเป็นทองคำ" หรือ "ตั้ง 10 ไม้"…' onkeydown="if(event.key==='Enter') submitVoiceText();">
+            <button class="tawee-voice-send" onclick="submitVoiceText()">ส่ง</button>
+        </div>
+    </div>
+    <div class="tawee-voice-caption" id="voiceMsgEl">กดไมค์แล้วพูด หรือพิมพ์คำสั่งได้เลยค่ะ</div>
+</div>
+
+<script>
+    let rows = 10;
+    let dist = 200;
+    let cSize = 1;
+    let currentAsset = 'set50';
+    let contractSizes = {};
+    let userEdited = new Set();
+
+    const assetConfig = {
+        gold:    { label: 'ทองคำ',      unit: 'USD',  multiplier: 100,  info: 'ทองคำ — ตัวคูณ: 100 | สูตร: Size × คลุม Zone × 100 = ต้นทุน (USD)',        defaultTop: 3500,   defaultBottom: 2800,  defaultDist: 100  },
+        crypto:  { label: 'Crypto',     unit: 'USD',  multiplier: 1,    info: 'Crypto — ตัวคูณ: 1 | สูตร: Size × คลุม Zone × 1 = ต้นทุน (USD)',          defaultTop: 100000, defaultBottom: 60000, defaultDist: 5000 },
+        set50:   { label: 'SET50',      unit: 'บาท',  multiplier: 200,  info: 'SET50 Index Options — ตัวคูณ: 200 | สูตร: Size × คลุม Zone × 200 = ต้นทุน (บาท)', defaultTop: 4000,  defaultBottom: 2000,  defaultDist: 200  },
+        usd:     { label: 'USD Future', unit: 'บาท',  multiplier: 1000, info: 'USD Futures — ตัวคูณ: 1,000 | สูตร: Size × คลุม Zone × 1,000 = ต้นทุน (บาท)',   defaultTop: 38,    defaultBottom: 32,    defaultDist: 0.5  },
+        usstock: { label: 'US Stock',   unit: 'USD',  multiplier: 100,  info: 'US Stock Options — ตัวคูณ: 100 | สูตร: Size × คลุม Zone × 100 = ต้นทุน (USD)',   defaultTop: 600,   defaultBottom: 400,   defaultDist: 20   },
+    };
+
+    /* ── Asset Selection ── */
+    function selectAsset(key, btn) {
+        currentAsset = key;
+        document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const cfg = assetConfig[key];
+        document.getElementById('assetInfo').classList.add('show');
+        document.getElementById('assetInfoText').textContent = cfg.info;
+        document.getElementById('assetTag').textContent      = cfg.label;
+        document.getElementById('unitLabel').textContent     = cfg.unit;
+        document.getElementById('topZone').value             = cfg.defaultTop;
+        document.getElementById('bottomZone').value          = cfg.defaultBottom;
+        document.getElementById('distDefault').value         = cfg.defaultDist;
+        dist = cfg.defaultDist;
+        cSize = 1;
+        contractSizes = {};
+        userEdited = new Set();
+        calculate();
+    }
+
+    /* ── Row Count ── */
+    function changeSize(n, btn) {
+        rows = n;
+        contractSizes = {};
+        userEdited = new Set();
+        document.querySelectorAll('.btn-size').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        calculate();
+    }
+
+    /* ── Master Contract Size (row 0) propagates to un-edited rows ── */
+    function onMasterSizeChange(value) {
+        const val = parseFloat(value);
+        cSize = isNaN(val) ? 0 : val;
+        contractSizes[0] = cSize;
+        for (let i = 1; i < rows; i++) {
+            if (!userEdited.has(i)) {
+                const inp = document.getElementById(`csize-${i}`);
+                if (inp) inp.value = cSize;
+                contractSizes[i] = cSize;
+            }
+        }
+        recalcOnly();
+    }
+
+    /* ── Per-row Contract Size ── */
+    function onRowSizeChange(index, value) {
+        const val = parseFloat(value);
+        contractSizes[index] = isNaN(val) ? 0 : val;
+        userEdited.add(index);
+        recalcOnly();
+    }
+
+    /* ── Recalculate cost cells without rebuilding DOM ── */
+    function recalcOnly() {
+        const top    = parseFloat(document.getElementById('topZone').value)    || 0;
+        const bottom = parseFloat(document.getElementById('bottomZone').value) || 0;
+        const cfg        = assetConfig[currentAsset];
+        const multiplier = cfg.multiplier;
+        let totalBudget  = 0;
+
+        for (let i = 0; i < rows; i++) {
+            const assetPrice    = top - (dist * i);
+            const coverage      = assetPrice - bottom;
+            const safeCoverage  = coverage > 0 ? coverage : 0;
+            const rowSize       = contractSizes[i] !== undefined ? contractSizes[i] : cSize;
+            const cost          = rowSize * safeCoverage * multiplier;
+            totalBudget        += cost;
+
+            const costCell = document.getElementById(`cost-${i}`);
+            if (costCell)
+                costCell.innerHTML = `${cost.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} <span style="color:#475569;font-size:12px">${cfg.unit}</span>`;
+        }
+        document.getElementById('grandTotal').textContent =
+            totalBudget.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    }
+
+    /* ── Full Rebuild ── */
+    function calculate() {
+        const top    = parseFloat(document.getElementById('topZone').value)    || 0;
+        const bottom = parseFloat(document.getElementById('bottomZone').value) || 0;
+        const tbody      = document.getElementById('gridTable');
+        const cfg        = assetConfig[currentAsset];
+        const multiplier = cfg.multiplier;
+        const isDecimal  = ['gold','crypto','usd'].includes(currentAsset);
+        tbody.innerHTML  = '';
+        let totalBudget  = 0;
+        let totalCov     = 0;
+
+        for (let i = 0; i < rows; i++) {
+            const assetPrice   = top - (dist * i);
+            const coverage     = assetPrice - bottom;
+            const safeCoverage = coverage > 0 ? coverage : 0;
+            if (contractSizes[i] === undefined) contractSizes[i] = cSize;
+            const rowSize = contractSizes[i];
+            const cost    = rowSize * safeCoverage * multiplier;
+            totalBudget  += cost;
+            if (i === 0) totalCov = safeCoverage;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="txt-center" style="color:#475569">${i + 1}</td>
+                <td style="color:#3b82f6;font-weight:700">${assetPrice.toLocaleString()}</td>
+                <td class="txt-center">
+                    <input type="number"
+                        class="${i === 0 ? 'master-input' : 'readonly-input'}"
+                        value="${dist}"
+                        step="${isDecimal ? 0.01 : 1}"
+                        min="0.01"
+                        ${i !== 0 ? 'readonly' : ''}
+                        oninput="dist=parseFloat(this.value)||0;document.getElementById('distDefault').value=dist;calculate()">
+                </td>
+                <td class="txt-center" style="color:#f59e0b">${safeCoverage.toLocaleString()}</td>
+                <td>
+                    <select class="strategy-select"
+                        onchange="this.value===''?this.classList.remove('selected'):this.classList.add('selected')">
+                        <option value="" style="color:#475569">— None —</option>
+                        <option value="Covered Call">Covered Call</option>
+                        <option value="Short Put Option">Short Put Option</option>
+                        <option value="Long Put Options">Long Put Options</option>
+                        <option value="Grid">Grid</option>
+                        <option value="Long Call Spread">Long Call Spread</option>
+                        <option value="Bear Call Spread">Bear Call Spread</option>
+                        <option value="Long Ratio Call Spread">Long Ratio Call Spread</option>
+                    </select>
+                </td>
+                <td class="txt-center">
+                    <input type="number"
+                        class="master-input"
+                        id="csize-${i}"
+                        value="${rowSize}"
+                        step="0.01"
+                        min="0.01"
+                        style="width:90px;${i === 0 ? 'border-color:#3b82f6 !important;' : 'border-color:#334155 !important;'}"
+                        oninput="${i === 0 ? 'onMasterSizeChange(this.value)' : `onRowSizeChange(${i},this.value)`}">
+                </td>
+                <td class="txt-center" style="color:#475569;font-size:13px">×${multiplier.toLocaleString()}</td>
+                <td class="txt-right" style="color:#10b981;font-weight:700" id="cost-${i}">
+                    ${cost.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                    <span style="color:#475569;font-size:12px">${cfg.unit}</span>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        document.getElementById('grandTotal').textContent =
+            totalBudget.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+        document.getElementById('rowCount').textContent    = rows;
+        document.getElementById('totalCoverage').textContent = totalCov.toLocaleString();
+        document.getElementById('formulaLabel').textContent  =
+            `สูตร: Size × คลุม Zone × ${multiplier.toLocaleString()} = ต้นทุน (${cfg.unit})`;
+    }
+
+    /* ── Init ── */
+    window.onload = calculate;
+
+    // ===========================
+    // สั่งงานด้วยเสียง/พิมพ์ (เหมือนหน้า Payoff Chart — ใช้ Claude API key เดียวกันจาก tawee_cfg_v3
+    // ถ้ามี ให้ Claude ตีความประโยคอิสระ ถ้าไม่มีตกไปใช้การจับคำแบบตายตัวแทน)
+    // ===========================
+    function _getTaweeCfg() {
+        try { return JSON.parse(localStorage.getItem('tawee_cfg_v3') || '{}'); } catch (e) { return {}; }
+    }
+    function _hasClaudeAccess() { return !!_getTaweeCfg().apiKey; }
+
+    function setVoiceMsg(text) {
+        const el = document.getElementById('voiceMsgEl');
+        if (el) el.textContent = text;
+    }
+
+    function speak(text) {
+        if (window.speakSoniox) window.speakSoniox(text);
+    }
+
+    // ── ตัวช่วยเรียกใช้งานฟังก์ชันเดิมของหน้านี้แบบปลอดภัย (ไม่พังถ้าไม่มีปุ่มที่ตรงเป๊ะ) ──
+    function voiceSelectAsset(key) {
+        const btn = document.querySelector('.asset-btn.' + key);
+        if (btn) selectAsset(key, btn);
+    }
+    function voiceSetRows(n) {
+        const btn = [...document.querySelectorAll('.btn-size')].find(b => parseInt(b.textContent, 10) === n);
+        if (btn) { changeSize(n, btn); return; }
+        // ไม่มีปุ่มพอดี (เช่น 7 ไม้) — ตั้งค่าตรงๆ โดยไม่มีปุ่มไหน active
+        document.querySelectorAll('.btn-size').forEach(b => b.classList.remove('active'));
+        rows = n; contractSizes = {}; userEdited = new Set(); calculate();
+    }
+    function voiceSetZone({ top, bottom, distance } = {}) {
+        if (top != null && !isNaN(top)) document.getElementById('topZone').value = top;
+        if (bottom != null && !isNaN(bottom)) document.getElementById('bottomZone').value = bottom;
+        if (distance != null && !isNaN(distance)) { document.getElementById('distDefault').value = distance; dist = distance; }
+        calculate();
+    }
+    function voiceSetContractSize(size) {
+        if (size == null || isNaN(size)) return;
+        const el = document.getElementById('csize-0');
+        if (el) el.value = size;
+        onMasterSizeChange(size);
+    }
+
+    const ASSET_NAMES = { gold: 'ทองคำ', crypto: 'Crypto', set50: 'SET50', usd: 'USD Future', usstock: 'US Stock' };
+
+    function _commandSysPromptPlanning() {
+        return [
+            'คุณคือระบบตีความคำสั่งสำหรับหน้า Option Planning (วางแผนขนาดสัญญาแบบเป็นกริดหลายไม้) หน้าที่เดียวคือแปลงคำพูด/ข้อความผู้ใช้เป็น JSON เท่านั้น',
+            'ตอบกลับเป็น JSON ล้วนๆ ห้ามมี markdown code fence ห้ามมีข้อความอื่นนอกเหนือ JSON',
+            '',
+            'รูปแบบที่ต้องตอบ: {"actions":[...],"reply":"..."}',
+            '',
+            'actions แต่ละอันเป็นหนึ่งใน:',
+            '{"type":"switch_asset","asset":"gold|crypto|set50|usd|usstock"} — เปลี่ยนสินทรัพย์ (ทองคำ→gold, คริปโต/บิทคอยน์→crypto, SET50→set50, ดอลลาร์→usd, หุ้นสหรัฐ→usstock)',
+            '{"type":"set_rows","rows":number} — ตั้งจำนวนไม้ที่จะเทรด',
+            '{"type":"set_zone","top":number|null,"bottom":number|null,"distance":number|null} — ตั้งกรอบบน/กรอบล่าง/ระยะห่างแต่ละไม้ ใส่เฉพาะค่าที่ผู้ใช้บอก ที่เหลือ null',
+            '{"type":"set_contract_size","size":number} — ตั้งขนาดสัญญาต่อไม้ (จะกระจายไปทุกไม้ที่ยังไม่ถูกแก้เอง)',
+            '',
+            'ถ้าไม่มีคำสั่งที่เข้าใจได้เลย ให้ actions เป็น [] และอธิบายสั้นๆใน reply ว่าฟังไม่เข้าใจ',
+            'reply คือประโยคสั้นๆ ภาษาไทย 1 ประโยค สำหรับพูดยืนยันกับผู้ใช้',
+        ].join('\n');
+    }
+
+    async function _runClaudeCommandPlanning(text) {
+        const cfg = _getTaweeCfg();
+        setVoiceMsg('กำลังตีความคำสั่งด้วย Claude…');
+        try {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                    'x-api-key': cfg.apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerous-direct-browser-access': 'true',
+                },
+                body: JSON.stringify({
+                    model: cfg.model || 'claude-sonnet-4-5-20250929',
+                    max_tokens: 400,
+                    system: _commandSysPromptPlanning(),
+                    messages: [{ role: 'user', content: text }],
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error((data.error && data.error.message) || ('HTTP ' + res.status));
+            const raw = data.content?.[0]?.text || '{}';
+            const jsonMatch = raw.match(/\{[\s\S]*\}/);
+            const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
+            _runActionsPlanning(parsed.actions || []);
+            const reply = parsed.reply || 'ทำตามคำสั่งให้แล้วค่ะ';
+            setVoiceMsg(reply);
+            speak(reply);
+        } catch (e) {
+            setVoiceMsg('เชื่อมต่อ Claude ไม่สำเร็จ: ' + e.message);
+        }
+    }
+
+    function _runActionsPlanning(actions) {
+        for (const a of actions) { try { _runOneActionPlanning(a); } catch (e) {} }
+    }
+
+    function _runOneActionPlanning(a) {
+        switch (a.type) {
+            case 'switch_asset':
+                if (assetConfig[a.asset]) voiceSelectAsset(a.asset);
+                break;
+            case 'set_rows':
+                if (a.rows) voiceSetRows(a.rows);
+                break;
+            case 'set_zone':
+                voiceSetZone({ top: a.top ?? null, bottom: a.bottom ?? null, distance: a.distance ?? null });
+                break;
+            case 'set_contract_size':
+                voiceSetContractSize(a.size);
+                break;
+        }
+    }
+
+    // สำรอง: ใช้เมื่อยังไม่ได้ตั้ง Claude API key — จับคำตายตัวแบบเดิม
+    function _handleVoiceCommandLocalPlanning(text) {
+        const t = (text || '').toLowerCase();
+
+        const ASSET_KW = [
+            { key: 'gold', kw: ['gold', 'ทองคำ', 'ทอง'] },
+            { key: 'crypto', kw: ['crypto', 'คริปโต', 'บิทคอยน์', 'บิตคอยน์', 'bitcoin'] },
+            { key: 'set50', kw: ['set50', 'เซ็ต50', 'เซ็ต 50'] },
+            { key: 'usd', kw: ['usd future', 'ดอลลาร์', 'ดอลล่าร์'] },
+            { key: 'usstock', kw: ['us stock', 'หุ้นสหรัฐ', 'หุ้นอเมริกา'] },
+        ];
+        for (const a of ASSET_KW) {
+            if (a.kw.some(k => t.includes(k))) {
+                voiceSelectAsset(a.key);
+                setVoiceMsg('เปลี่ยนเป็น ' + ASSET_NAMES[a.key] + ' แล้วค่ะ');
+                speak('เปลี่ยนสินทรัพย์ให้แล้วค่ะ');
+                return;
+            }
+        }
+
+        // ตั้งจำนวนไม้: "ตั้ง 10 ไม้" / "10 ไม้" / "set 10 rows"
+        const rowsMatch = t.match(/(\d+)\s*(?:ไม้|rows?)/);
+        if (rowsMatch) {
+            const n = parseInt(rowsMatch[1], 10);
+            voiceSetRows(n);
+            setVoiceMsg('ตั้งเป็น ' + n + ' ไม้แล้วค่ะ');
+            speak('ตั้งจำนวนไม้ให้แล้วค่ะ');
+            return;
+        }
+
+        // ตั้งขนาดสัญญาต่อไม้: "ตั้งขนาดสัญญา 2" / "contract size 2"
+        const csizeMatch = t.match(/(?:ขนาดสัญญา|contract\s*size)\s*(?:เป็น)?\s*(\d+(?:\.\d+)?)/);
+        if (csizeMatch) {
+            const size = parseFloat(csizeMatch[1]);
+            voiceSetContractSize(size);
+            setVoiceMsg('ตั้งขนาดสัญญาเป็น ' + size + ' แล้วค่ะ');
+            speak('ตั้งขนาดสัญญาให้แล้วค่ะ');
+            return;
+        }
+
+        // ตั้งกรอบบน/กรอบล่าง/ระยะห่าง — พูดได้หลายค่าในประโยคเดียว
+        const topMatch = t.match(/(?:กรอบบน|ราคาสูงสุด)\s*(?:เป็น)?\s*(\d+(?:\.\d+)?)/);
+        const bottomMatch = t.match(/(?:กรอบล่าง|ราคาต่ำสุด)\s*(?:เป็น)?\s*(\d+(?:\.\d+)?)/);
+        const distMatch = t.match(/(?:ระยะห่าง|distance)\s*(?:เป็น)?\s*(\d+(?:\.\d+)?)/);
+        if (topMatch || bottomMatch || distMatch) {
+            voiceSetZone({
+                top: topMatch ? parseFloat(topMatch[1]) : null,
+                bottom: bottomMatch ? parseFloat(bottomMatch[1]) : null,
+                distance: distMatch ? parseFloat(distMatch[1]) : null,
+            });
+            setVoiceMsg('ปรับกรอบบน-ล่าง/ระยะห่างให้แล้วค่ะ');
+            speak('ปรับให้แล้วค่ะ');
+            return;
+        }
+
+        setVoiceMsg('คุณพูดว่า: "' + text + '" — ลองพูดเช่น "เปลี่ยนเป็นทองคำ" หรือ "ตั้ง 10 ไม้" ดูนะคะ');
+    }
+
+    async function handleVoiceCommandPlanning(text) {
+        if (_hasClaudeAccess()) { await _runClaudeCommandPlanning(text); return; }
+        _handleVoiceCommandLocalPlanning(text);
+    }
+
+    // ── ปุ่มไมค์: กดครั้งแรกเริ่มฟัง กดซ้ำ/พูดจบหยุดเอง ──
+    // MediaRecorder + Worker /transcribe — เลิกใช้ browser SpeechRecognition ที่ค้างได้ไม่แจ้งเตือน
+    let _voiceInput = null;
+    function toggleVoiceMic() {
+        if (_voiceInput && _voiceInput._listening) { _voiceInput.stop(false); return; }
+        if (!window.TaweeVoiceInput) { setVoiceMsg('โมดูลไมโครโฟนโหลดไม่สำเร็จ'); return; }
+        if (!_voiceInput) _voiceInput = new TaweeVoiceInput();
+        _voiceInput.start({
+            onStateChange: (state) => {
+                const fab = document.getElementById('voiceFab');
+                if (state === 'listening') { fab.classList.add('listening'); setVoiceMsg('กำลังฟัง...'); }
+                else if (state === 'processing_stt') { setVoiceMsg('กำลังแปลงเสียง...'); }
+                else if (state === 'idle') { fab.classList.remove('listening'); }
+            },
+            onTranscript: (text) => { handleVoiceCommandPlanning(text); },
+            onError: (err) => {
+                document.getElementById('voiceFab').classList.remove('listening');
+                setVoiceMsg(err.message || 'ไม่ได้ยิน ลองพูดอีกครั้ง');
+            },
+        });
+    }
+
+    function submitVoiceText() {
+        const el = document.getElementById('voiceTextInput');
+        const text = (el && el.value || '').trim();
+        if (!text) return;
+        handleVoiceCommandPlanning(text);
+        if (el) el.value = '';
+    }
+
+    document.getElementById('voiceFab').addEventListener('click', toggleVoiceMic);
+</script>
+
+</body>
+</html>

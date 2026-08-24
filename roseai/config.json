@@ -1,0 +1,19 @@
+{
+  "apiKey": "",
+  "proxyUrl": "",
+  "proxySecret": "",
+  "todoWebAppUrl": "",
+  "financeWebAppUrl": "",
+  "morningRoutineWebAppUrl": "",
+  "googleClientId": "728691111155-356oe9mi9mmmi07ujmrallpmkcfi0j9v.apps.googleusercontent.com",
+  "googleSpreadsheetId": "",
+  "model": "gemini-1.5-pro",
+  "theme": "emerald",
+  "avatar": "sphere",
+  "speak": true,
+  "userName": "คุณ",
+  "weatherLat": 13.7563,
+  "weatherLon": 100.5018,
+  "weatherCity": "กรุงเทพฯ",
+  "geminiKey": "AIzaSyC-33DaqOC3HxqZBcVn5CNaROrP6QFzqXQ"
+}

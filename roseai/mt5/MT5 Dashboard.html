@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MT5 Dashboard — TAWEE AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans+Thai:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{min-height:100%;background:#04050a;color:#e8ebf2;font-family:'Space Grotesk','IBM Plex Sans Thai',sans-serif;-webkit-font-smoothing:antialiased;}
+  :root{--accent:#0FAE7D;--accentRGB:15,174,125;}
+  a{color:inherit;text-decoration:none;}
+  ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
+
+  .wrap{position:relative;min-height:100vh;overflow:hidden;}
+  .bg-glow{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 20% 0%,rgba(var(--accentRGB),.14) 0,transparent 55%);}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid rgba(255,255,255,.07);position:relative;z-index:2;flex-wrap:wrap;gap:12px;}
+  .brand{display:flex;align-items:center;gap:11px;}
+  .brand-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent);}
+  .brand-name{font-size:16px;font-weight:700;letter-spacing:2px;}
+  .brand-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);text-transform:uppercase;}
+  .back-link{display:flex;align-items:center;gap:6px;font-size:12.5px;color:rgba(255,255,255,.55);padding:8px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);transition:all .2s;}
+  .back-link:hover{color:#fff;border-color:rgba(255,255,255,.25);}
+
+  .status-pill{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;border:1px solid;}
+  .status-pill.live{color:#4ade80;border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.08);}
+  .status-pill.offline{color:#fbbf24;border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.08);}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;}
+  .status-pill.live .status-dot{animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+  main{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:28px 24px 60px;}
+  h1{font-size:22px;font-weight:700;margin-bottom:4px;}
+  .subtitle{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:26px;}
+
+  .offline-banner{display:none;align-items:center;gap:10px;padding:14px 18px;border-radius:14px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);color:#fbbf24;font-size:13px;margin-bottom:22px;}
+  .offline-banner.show{display:flex;}
+
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px;}
+  .tile{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px 20px;}
+  .tile-label{font-size:12px;color:rgba(255,255,255,.45);margin-bottom:10px;}
+  .tile-value{font-size:26px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+  .tile-value.up{color:#4ade80;}
+  .tile-value.down{color:#f87171;}
+  .tile-sub{font-size:11.5px;color:rgba(255,255,255,.4);margin-top:6px;}
+
+  .info-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;}
+  .info-chip{padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:12px;color:rgba(255,255,255,.6);}
+  .info-chip b{color:#e8ebf2;font-family:'JetBrains Mono',monospace;}
+
+  .section-title{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .sessions{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;}
+  .session-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;}
+  .session-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .session-name{font-size:13px;font-weight:600;}
+  .session-badge{font-size:9.5px;padding:3px 8px;border-radius:8px;font-family:'JetBrains Mono',monospace;}
+  .session-badge.open{background:rgba(74,222,128,.15);color:#4ade80;}
+  .session-badge.closed{background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);}
+  .session-time{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;margin-bottom:4px;}
+  .session-countdown{font-size:11.5px;color:rgba(255,255,255,.42);}
+
+  .setup-note{margin-top:30px;padding:16px 18px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);font-size:12px;color:rgba(255,255,255,.4);line-height:1.7;}
+  .setup-note code{font-family:'JetBrains Mono',monospace;color:var(--accent);background:rgba(var(--accentRGB),.1);padding:1px 6px;border-radius:5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bg-glow"></div>
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <div>
+        <div class="brand-name">TAWEE AI</div>
+        <div class="brand-sub">MT5 Dashboard</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="statusPill" class="status-pill offline"><span class="status-dot"></span><span id="statusText">กำลังเชื่อมต่อ...</span></span>
+      <a class="back-link" href="../index.html">← กลับ TAWEE</a>
+    </div>
+  </div>
+
+  <main>
+    <h1>Dashboard</h1>
+    <div class="subtitle">ภาพรวมบัญชี MT5 แบบเรียลไทม์</div>
+
+    <div id="offlineBanner" class="offline-banner">
+      ⚠ ไม่มีข้อมูลใหม่จาก MT5 Bridge — เปิดโปรแกรม <code>mt5-bridge/bridge.py</code> ค้างไว้บนเครื่องที่ล็อกอิน MT5 อยู่
+    </div>
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="tile-label">Equity</div>
+        <div class="tile-value" id="tileEquity">—</div>
+        <div class="tile-sub" id="tileEquitySub">Account</div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">Today's P/L</div>
+        <div class="tile-value" id="tilePL">—</div>
+        <div class="tile-sub" id="tilePLSub"></div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">Win Rate</div>
+        <div class="tile-value" id="tileWinRate">—</div>
+        <div class="tile-sub">30d</div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">Profit Factor</div>
+        <div class="tile-value" id="tileProfitFactor">—</div>
+        <div class="tile-sub">30d</div>
+      </div>
+    </div>
+
+    <div class="info-row" id="infoRow"></div>
+
+    <div class="section-title">🕐 Market Sessions (เวลาเปิด-ปิดตลาดโลก)</div>
+    <div class="subtitle" style="margin-bottom:14px;">เวลาไทย · อัปเดตสด · สุดสัปดาห์หลายตลาดปิด</div>
+    <div class="sessions" id="sessions"></div>
+
+    <div class="setup-note">
+      ยังไม่เห็นข้อมูล? เช็ค 3 อย่าง: (1) เปิดโปรแกรม MetaTrader 5 และล็อกอินบัญชีค้างไว้ (2) รัน <code>python bridge.py</code> ในโฟลเดอร์ <code>mt5-bridge/</code> (3) ตั้งค่า <code>WORKER_URL</code>/<code>SHARED_SECRET</code> ในไฟล์ bridge.py ให้ตรงกับหน้าตั้งค่าเว็บ TAWEE
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var PALETTES = {
+    emerald:{c1:'#0FAE7D',rgb:'15,174,125'}, sapphire:{c1:'#3568D4',rgb:'53,104,212'},
+    amethyst:{c1:'#7B4FE0',rgb:'123,79,224'}, bronze:{c1:'#C97C3D',rgb:'201,124,61'},
+    wine:{c1:'#B0304B',rgb:'176,48,75'},
+  };
+  function applyTheme(){
+    try{
+      var cfg = JSON.parse(localStorage.getItem('tawee_cfg_v3')||'{}');
+      var p = PALETTES[cfg.theme] || PALETTES.emerald;
+      document.documentElement.style.setProperty('--accent', p.c1);
+      document.documentElement.style.setProperty('--accentRGB', p.rgb);
+    }catch(e){}
+  }
+  function getProxyConfig(){
+    try{
+      var cfg = JSON.parse(localStorage.getItem('tawee_cfg_v3')||'{}');
+      return { url: cfg.proxyUrl||'', secret: cfg.proxySecret||'' };
+    }catch(e){ return {url:'',secret:''}; }
+  }
+  applyTheme();
+
+  function fmtMoney(n){ return '$' + Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  async function fetchStatus(){
+    var pc = getProxyConfig();
+    var statusPill = document.getElementById('statusPill');
+    var statusText = document.getElementById('statusText');
+    var offlineBanner = document.getElementById('offlineBanner');
+
+    if(!pc.url || !pc.secret){
+      statusPill.className = 'status-pill offline';
+      statusText.textContent = 'ยังไม่ได้ตั้งค่า Worker Proxy';
+      offlineBanner.classList.add('show');
+      return;
+    }
+    try{
+      var res = await fetch(pc.url + '/mt5-status', { method:'POST', headers:{'x-tawee-secret':pc.secret} });
+      var data = await res.json();
+      if(!data.connected){
+        statusPill.className = 'status-pill offline';
+        statusText.textContent = 'ออฟไลน์ - รอเชื่อมต่อ';
+        offlineBanner.classList.add('show');
+        return;
+      }
+      offlineBanner.classList.remove('show');
+      statusPill.className = 'status-pill live';
+      statusText.textContent = 'ข้อมูลจริง (Live)';
+      renderData(data);
+    }catch(e){
+      statusPill.className = 'status-pill offline';
+      statusText.textContent = 'เชื่อมต่อไม่ได้';
+      offlineBanner.classList.add('show');
+    }
+  }
+
+  function renderData(d){
+    document.getElementById('tileEquity').textContent = fmtMoney(d.equity||0);
+    document.getElementById('tileEquitySub').textContent = 'บัญชี #' + (d.accountNumber||'-');
+
+    var pl = d.todayPL||0;
+    var plEl = document.getElementById('tilePL');
+    plEl.textContent = (pl>=0?'+':'') + fmtMoney(pl);
+    plEl.className = 'tile-value ' + (pl>=0?'up':'down');
+    document.getElementById('tilePLSub').textContent = (d.todayPLPercent>=0?'+':'') + (d.todayPLPercent||0) + '%';
+
+    document.getElementById('tileWinRate').textContent = (d.winRate||0) + '%';
+    document.getElementById('tileProfitFactor').textContent = (d.profitFactor||0).toFixed ? d.profitFactor.toFixed(2) : d.profitFactor;
+
+    document.getElementById('infoRow').innerHTML =
+      '<div class="info-chip">โบรกเกอร์ <b>'+(d.broker||'-')+'</b></div>' +
+      '<div class="info-chip">สกุลเงิน <b>'+(d.currency||'-')+'</b></div>' +
+      '<div class="info-chip">Leverage <b>1:'+(d.leverage||'-')+'</b></div>' +
+      '<div class="info-chip">Margin Level <b>'+(d.marginLevel||0)+'%</b></div>' +
+      '<div class="info-chip">Positions เปิดอยู่ <b>'+(d.openPositions||0)+'</b></div>';
+  }
+
+  // ── Market Sessions (เวลาไทย UTC+7) ──
+  var SESSIONS = [
+    { name:'Sydney',   open:4,  close:13 },
+    { name:'Tokyo',    open:7,  close:16 },
+    { name:'London',   open:14, close:23 },
+    { name:'New York', open:19, close:4  },
+  ];
+
+  function sessionState(openH, closeH){
+    var now = new Date();
+    var nowMin = now.getHours()*60 + now.getMinutes();
+    var openMin = openH*60, closeMin = closeH*60;
+    var isOpen, minsToEvent, label;
+    if(openMin < closeMin){
+      isOpen = nowMin >= openMin && nowMin < closeMin;
+      if(isOpen){ minsToEvent = closeMin-nowMin; label='ปิดอีก'; }
+      else if(nowMin < openMin){ minsToEvent = openMin-nowMin; label='เปิดอีก'; }
+      else { minsToEvent = (1440-nowMin)+openMin; label='เปิดอีก'; }
+    } else {
+      isOpen = nowMin >= openMin || nowMin < closeMin;
+      if(isOpen){ minsToEvent = nowMin>=openMin ? (1440-nowMin)+closeMin : closeMin-nowMin; label='ปิดอีก'; }
+      else { minsToEvent = openMin-nowMin; label='เปิดอีก'; }
+    }
+    var h = Math.floor(minsToEvent/60), m = minsToEvent%60;
+    return { isOpen:isOpen, text: label+' '+h+' ชม. '+m+' น.' };
+  }
+
+  function pad(n){ return n<10?'0'+n:''+n; }
+
+  function renderSessions(){
+    var html = SESSIONS.map(function(s){
+      var st = sessionState(s.open, s.close);
+      return '<div class="session-card">' +
+        '<div class="session-head"><span class="session-name">'+s.name+'</span>' +
+        '<span class="session-badge '+(st.isOpen?'open':'closed')+'">'+(st.isOpen?'● เปิด':'● ปิด')+'</span></div>' +
+        '<div class="session-time">'+pad(s.open)+':00-'+pad(s.close)+':00 น.</div>' +
+        '<div class="session-countdown">'+st.text+'</div>' +
+      '</div>';
+    }).join('');
+    document.getElementById('sessions').innerHTML = html;
+  }
+
+  renderSessions();
+  setInterval(renderSessions, 30000);
+  fetchStatus();
+  setInterval(fetchStatus, 5000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1614 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>window.TAWEE_TTS_PAGE = 'finance-dashboard';</script>
+<script src="../soniox-tts.js"></script>
+<script src="../TAWEE-voice-input.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    @keyframes tickerScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+    @keyframes glowPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+    @keyframes ping { 0%{transform:scale(1);opacity:0.8} 100%{transform:scale(3);opacity:0} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes scanLine { 0%{top:-1px} 100%{top:100%} }
+    @keyframes auroraDrift1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(120px,60px) scale(1.25)} }
+    @keyframes auroraDrift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-90px,-50px) scale(1.18)} }
+    @keyframes auroraDrift3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(70px,-80px) scale(1.12)} }
+    @keyframes bracketPulse { 0%,100%{opacity:0.45} 50%{opacity:0.85} }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:#020c18; color:#e2e8f0; font-family:'Sarabun',sans-serif; overflow:hidden; height:100vh; width:100vw; }
+    canvas { display:block; }
+    ::-webkit-scrollbar { width:3px; }
+    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+  </style>
+</helmet>
+
+<div style="height:100vh;width:100vw;display:flex;flex-direction:column;background:#020c18;position:relative;overflow:hidden;">
+
+  <!-- ██ AURORA BG ██ -->
+  <div style="position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden;">
+    <div style="position:absolute;width:900px;height:500px;top:-120px;left:-100px;background:radial-gradient(ellipse,rgba(16,185,129,0.07) 0%,transparent 70%);animation:auroraDrift1 18s ease-in-out infinite;border-radius:50%;filter:blur(60px);"></div>
+    <div style="position:absolute;width:700px;height:380px;bottom:-80px;right:-100px;background:radial-gradient(ellipse,rgba(139,92,246,0.08) 0%,transparent 70%);animation:auroraDrift2 22s ease-in-out infinite;border-radius:50%;filter:blur(60px);"></div>
+    <div style="position:absolute;width:600px;height:320px;top:35%;left:15%;background:radial-gradient(ellipse,rgba(59,130,246,0.055) 0%,transparent 70%);animation:auroraDrift3 26s ease-in-out infinite;border-radius:50%;filter:blur(70px);"></div>
+    <div style="position:absolute;width:400px;height:200px;top:10%;right:25%;background:radial-gradient(ellipse,rgba(245,158,11,0.04) 0%,transparent 70%);animation:auroraDrift1 30s ease-in-out infinite reverse;border-radius:50%;filter:blur(50px);"></div>
+  </div>
+
+  <!-- ██ SCAN LINE ██ -->
+  <div style="position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(59,130,246,0.5) 50%,transparent 100%);animation:scanLine 8s linear infinite;pointer-events:none;z-index:99;"></div>
+
+  <!-- ████████████████ HEADER ████████████████ -->
+  <div style="display:flex;align-items:center;height:54px;padding:0 18px;border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(2,10,22,0.96);backdrop-filter:blur(28px);flex-shrink:0;gap:12px;position:relative;z-index:10;">
+
+    <div onClick="{{ goToTAWEE }}" title="กลับไปหน้า TAWEE" style="display:flex;align-items:center;gap:10px;margin-right:10px;flex-shrink:0;cursor:pointer;">
+      <div style="position:relative;width:10px;height:10px;">
+        <div style="position:absolute;inset:0;border-radius:50%;background:{{ agentHex }};box-shadow:0 0 12px {{ agentHex }};animation:glowPulse 2s ease-in-out infinite;"></div>
+        <div style="position:absolute;inset:-4px;border-radius:50%;background:{{ agentHex }};opacity:0.25;animation:ping 2.4s ease-out infinite;"></div>
+      </div>
+      <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.14em;color:#fff;">TAWEE AI</span>
+      <span style="font-size:10px;color:rgba(255,255,255,0.22);letter-spacing:0.08em;font-family:'Space Grotesk',sans-serif;">FINANCE</span>
+    </div>
+
+    <div style="width:1px;height:18px;background:rgba(255,255,255,0.1);flex-shrink:0;"></div>
+
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:9px;background:linear-gradient(135deg,rgba(59,130,246,0.16),rgba(59,130,246,0.05));border:1px solid rgba(59,130,246,0.35);flex-shrink:0;">
+      <div style="width:6px;height:6px;border-radius:50%;background:#3b82f6;flex-shrink:0;box-shadow:0 0 6px #3b82f6;animation:glowPulse 2s ease-in-out infinite;"></div>
+      <span style="font-size:13px;font-weight:600;color:#dbeafe;letter-spacing:0.02em;">นักวิเคราะห์ AI · Market Analyst</span>
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <div style="display:flex;gap:6px;align-items:center;margin-right:14px;">
+      <div onClick="{{ pickColor0 }}" style="{{ dot0Style }}"></div>
+      <div onClick="{{ pickColor1 }}" style="{{ dot1Style }}"></div>
+      <div onClick="{{ pickColor2 }}" style="{{ dot2Style }}"></div>
+      <div onClick="{{ pickColor3 }}" style="{{ dot3Style }}"></div>
+      <div onClick="{{ pickColor4 }}" style="{{ dot4Style }}"></div>
+    </div>
+
+    <div style="font-size:9px;font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:0.1em;color:#10b981;padding:4px 9px;border-radius:5px;border:1px solid rgba(16,185,129,0.4);opacity:0.85;flex-shrink:0;">● LIVE · TRADINGVIEW</div>
+
+    <div style="text-align:right;margin-left:10px;flex-shrink:0;">
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:#fff;letter-spacing:0.05em;">{{ timeStr }}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.28);letter-spacing:0.04em;">{{ dateStr }}</div>
+    </div>
+  </div>
+
+  <!-- ████████████████ MAIN ████████████████ -->
+  <div style="flex:1;display:flex;overflow:hidden;min-height:0;position:relative;z-index:{{ mainAreaZ }};">
+
+    <!-- ▌LEFT SIDEBAR ▐ -->
+    <div style="width:216px;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;background:rgba(2,8,20,0.55);overflow:hidden;">
+      <div style="margin:13px 11px 0;border-radius:10px;padding:13px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
+        <div style="display:flex;justify-content:center;padding:2px 0 8px;">
+          <canvas ref="{{ agentOrbRef }}" style="width:92px;height:92px;"></canvas>
+        </div>
+        <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.14em;color:rgba(255,255,255,0.25);margin-bottom:9px;text-align:center;">ACTIVE AGENT</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:{{ agentHex }};box-shadow:0 0 10px {{ agentHex }};animation:glowPulse 1.8s ease-in-out infinite;flex-shrink:0;"></div>
+          <div style="text-align:center;">
+            <div style="font-size:13px;font-weight:700;color:#fff;line-height:1.2;">{{ agent.name }}</div>
+            <div style="font-size:9px;color:{{ agentHex }};font-family:'Space Grotesk',sans-serif;margin-top:2px;letter-spacing:0.04em;">{{ agent.en }}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:5px;">
+          <div style="width:5px;height:5px;border-radius:50%;background:#10b981;animation:blink 1.3s infinite;"></div>
+          <span style="font-size:10px;color:rgba(255,255,255,0.35);">กำลังประมวลผล</span>
+        </div>
+      </div>
+
+      <div style="padding:13px 11px 0;">
+        <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.14em;color:rgba(255,255,255,0.25);margin-bottom:8px;">ACTIVE TASKS</div>
+        <sc-for list="{{ agentTasks }}" as="task" hint-placeholder-count="3">
+          <div style="display:flex;align-items:flex-start;gap:7px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+            <div style="width:4px;height:4px;border-radius:50%;background:{{ agentHex }};margin-top:5px;flex-shrink:0;animation:glowPulse 2.4s infinite;"></div>
+            <span style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.45;">{{ task }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="flex:1;"></div>
+
+      <div style="padding:0 11px 13px;">
+        <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.14em;color:rgba(255,255,255,0.25);margin-bottom:8px;">MARKET WATCH · TradingView</div>
+        <div ref="{{ marketOverviewRef }}" style="height:240px;"></div>
+      </div>
+
+      <div style="padding:0 11px 13px;">
+        <div onClick="{{ goToTAWEE }}" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,{{ agentHex }},#0a2540);color:#fff;font-size:12.5px;font-weight:700;font-family:'Space Grotesk',sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.35);">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.5"><path d="M1 2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4l-3 2V2Z"/></svg>
+          แชทกับ TAWEE
+        </div>
+      </div>
+    </div>
+
+    <!-- ▌CENTER: ORB / ANALYST CHART ▐ -->
+    <div style="flex:1;position:relative;min-width:0;">
+
+      <sc-if value="{{ orbActive }}" hint-placeholder-val="{{ true }}">
+      <canvas ref="{{ canvasRef }}" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+
+      <!-- HUD corner brackets -->
+      <div style="{{ bracketTL }}" style-hover="opacity:0.9;"></div>
+      <div style="{{ bracketTR }}" style-hover="opacity:0.9;"></div>
+      <div style="{{ bracketBL }}" style-hover="opacity:0.9;"></div>
+      <div style="{{ bracketBR }}" style-hover="opacity:0.9;"></div>
+
+      <!-- HUD top-left label -->
+      <div style="position:absolute;top:22px;left:22px;pointer-events:none;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:8px;letter-spacing:0.14em;color:{{ agentHex }};opacity:0.7;">◈ {{ agent.en }}</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:8px;color:rgba(255,255,255,0.22);margin-top:3px;letter-spacing:0.1em;">SYS ● ONLINE</div>
+      </div>
+
+      <!-- HUD top-right label -->
+      <div style="position:absolute;top:22px;right:22px;text-align:right;pointer-events:none;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:8px;letter-spacing:0.14em;color:rgba(255,255,255,0.22);">NEURAL NET ◈</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:8px;color:{{ agentHex }};opacity:0.7;margin-top:3px;letter-spacing:0.1em;">ACTIVE</div>
+      </div>
+
+      <!-- Status overlay -->
+      <div style="position:absolute;left:0;right:0;bottom:24px;text-align:center;pointer-events:none;">
+        <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:5px;padding:6px 16px;background:rgba(2,10,22,0.55);border:1px solid rgba(255,255,255,0.07);border-radius:20px;backdrop-filter:blur(12px);">
+          <div style="width:6px;height:6px;border-radius:50%;background:{{ agentHex }};animation:glowPulse 1.5s ease-in-out infinite;"></div>
+          <span style="font-size:13px;font-weight:600;color:#e2e8f0;">พร้อมใช้งาน</span>
+          <div style="width:1px;height:12px;background:rgba(255,255,255,0.15);"></div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.45);">{{ agent.name }}</span>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ANALYST: live chart + voice control -->
+      <sc-if value="{{ analystActive }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;">
+
+          <!-- symbol picker + last price -->
+          <div style="display:flex;align-items:center;gap:8px;padding:16px 22px 4px;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:6px;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;scrollbar-width:thin;">
+              <sc-for list="{{ symButtons }}" as="s" hint-placeholder-count="20">
+                <div onClick="{{ s.onClick }}" style="{{ s.style }}">{{ s.sym }}</div>
+              </sc-for>
+            </div>
+            <div style="flex:1;"></div>
+            <div onClick="{{ openPlanningBoard }}" style="display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:8px;cursor:pointer;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:#93c5fd;font-size:11px;font-weight:600;font-family:'Space Grotesk',sans-serif;flex-shrink:0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              Option Planning
+            </div>
+            <div onClick="{{ openPayoffBoard }}" style="display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:8px;cursor:pointer;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;font-size:11px;font-weight:600;font-family:'Space Grotesk',sans-serif;flex-shrink:0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
+              Payoff Chart
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:8px;letter-spacing:0.12em;color:rgba(255,255,255,0.3);">{{ analystSymbol }} · LIVE</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;color:#60a5fa;line-height:1.25;">TradingView</div>
+            </div>
+          </div>
+
+          <!-- กราฟ: BTC ใช้กราฟของเราเอง (มีเส้น OI wall วาดจริง) หุ้นตัวอื่นใช้ TradingView / หรือสลับเป็น Payoff Chart / Option Planning -->
+          <div style="flex:1;display:flex;min-height:0;padding:4px 8px;">
+            <sc-if value="{{ useCustomChart }}" hint-placeholder-val="{{ false }}">
+              <div ref="{{ lwChartRef }}" style="flex:1;min-height:0;width:100%;overflow:hidden;border-radius:8px;"></div>
+            </sc-if>
+            <sc-if value="{{ useTVChart }}" hint-placeholder-val="{{ true }}">
+              <div ref="{{ analystChartRef }}" style="flex:1;min-height:0;width:100%;overflow:hidden;border-radius:8px;"></div>
+            </sc-if>
+            <!-- อยู่ในเลย์เอาต์ตลอด (ไม่ unmount) แค่สลับ display เอา เพื่อไม่ให้ข้อมูลในเครื่องมือหายตอนสลับไปดูอีกอัน -->
+            <div style="{{ payoffPanelStyle }}">
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:#a78bfa;box-shadow:0 0 8px #a78bfa;animation:glowPulse 2s ease-in-out infinite;flex-shrink:0;"></span>
+                  <span style="font-size:12px;font-weight:700;color:#c4b5fd;font-family:'Space Grotesk',sans-serif;">Options Payoff Chart</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                  <div onClick="{{ toggleBoardFullscreen }}" title="ขยาย/ย่อเต็มจอ" style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#c2c8d4;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <sc-if value="{{ boardNotFullscreen }}" hint-placeholder-val="{{ true }}">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
+                    </sc-if>
+                    <sc-if value="{{ boardFullscreen }}" hint-placeholder-val="{{ false }}">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+                    </sc-if>
+                  </div>
+                  <div onClick="{{ closeBoard }}" style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#c2c8d4;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</div>
+                </div>
+              </div>
+              <iframe ref="{{ payoffFrameRef }}" src="./payoff-chart.html" style="flex:1;min-height:0;width:100%;border:none;background:#0c0c14;"></iframe>
+            </div>
+            <div style="{{ planningPanelStyle }}">
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:#60a5fa;box-shadow:0 0 8px #60a5fa;animation:glowPulse 2s ease-in-out infinite;flex-shrink:0;"></span>
+                  <span style="font-size:12px;font-weight:700;color:#93c5fd;font-family:'Space Grotesk',sans-serif;">Option Planning</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                  <div onClick="{{ toggleBoardFullscreen }}" title="ขยาย/ย่อเต็มจอ" style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#c2c8d4;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <sc-if value="{{ boardNotFullscreen }}" hint-placeholder-val="{{ true }}">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
+                    </sc-if>
+                    <sc-if value="{{ boardFullscreen }}" hint-placeholder-val="{{ false }}">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+                    </sc-if>
+                  </div>
+                  <div onClick="{{ closeBoard }}" style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#c2c8d4;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</div>
+                </div>
+              </div>
+              <iframe ref="{{ planningFrameRef }}" src="./option-planning.html" style="flex:1;min-height:0;width:100%;border:none;background:#0a0a0f;"></iframe>
+            </div>
+          </div>
+
+          <!-- voice control bar (ดีไซน์เดียวกับหน้าหลัก TAWEE) -->
+          <div style="display:flex;flex-direction:column;gap:6px;padding:10px 22px 22px;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div title="เปิด/ปิดกล้อง" style="flex-shrink:0;width:44px;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.05);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;">📷</div>
+              <div onClick="{{ toggleVoice }}" style="{{ micStyle }}">🎙</div>
+              <div style="flex:1;display:flex;align-items:center;gap:10px;padding:7px 8px 7px 20px;border-radius:18px;background:rgba(14,16,24,0.68);border:1px solid rgba(255,255,255,0.09);">
+                <input ref="{{ textInputRef }}" type="text" placeholder="พิมพ์ชื่อหุ้นหรือคำสั่งแล้วกด Enter เช่น &quot;วิเคราะห์ทองคำ&quot;…" onKeyDown="{{ onTextKeyDown }}"
+                  style="flex:1;background:transparent;border:none;color:#eef1f6;font-size:14px;padding:8px 0;font-family:inherit;outline:none;">
+                <div onClick="{{ submitText }}" style="flex-shrink:0;padding:11px 22px;border-radius:13px;cursor:pointer;background:#3b82f6;color:#04130c;font-size:14px;font-weight:600;">ส่ง</div>
+              </div>
+            </div>
+            <div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.32);">{{ voiceMsg }}</div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- ▌RIGHT PANEL ▐ -->
+    <div style="width:280px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;background:rgba(2,8,20,0.55);overflow:hidden;">
+
+      <!-- ANALYST: Technical Analysis -->
+      <sc-if value="{{ analystActive }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:13px 13px 13px;">
+          <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:10px;margin-bottom:13px;flex-shrink:0;">
+            <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.14em;color:rgba(255,255,255,0.25);margin-bottom:3px;">LIVE CHART · TRADINGVIEW</div>
+            <div style="font-size:13px;font-weight:700;color:#3b82f6;">นักวิเคราะห์ · {{ analystSymbol }}</div>
+          </div>
+
+          <div onClick="{{ toggleVoice }}" style="{{ voiceBtnStyle }}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+            <span>{{ voiceBtnLabel }}</span>
+          </div>
+          <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.3);text-align:center;flex-shrink:0;">{{ voiceMsg }}</div>
+
+          <!-- มุมขวาล่าง: สัญญาณ Swing Trade + แนวรับ/แนวต้าน + Open Interest (คำนวณเองจากราคาจริง) -->
+          <div style="margin-top:16px;position:relative;flex:1;display:flex;flex-direction:column;min-height:260px;border-radius:16px;background:linear-gradient(165deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015));border:1px solid rgba(255,255,255,0.08);box-shadow:0 14px 30px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.06);overflow:hidden;">
+            <div style="height:3px;flex-shrink:0;background:linear-gradient(90deg,#3b82f6,#60a5fa,#8b5cf6);"></div>
+
+            <div style="padding:12px 14px 9px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <span style="width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 8px #34d399;animation:glowPulse 2s ease-in-out infinite;flex-shrink:0;"></span>
+                <span style="font-size:9px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.14em;color:rgba(255,255,255,0.4);text-transform:uppercase;">สัญญาณ Swing Trade</span>
+              </div>
+              <span style="font-size:11px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#60a5fa;letter-spacing:0.03em;">{{ analystSymbol }}</span>
+            </div>
+
+            <sc-if value="{{ swingLoading }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:11px;color:rgba(255,255,255,0.35);">กำลังโหลดข้อมูลราคา…</span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ swingUnsupported }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0 20px;text-align:center;">
+                <span style="font-size:11px;color:rgba(255,255,255,0.4);">ยังไม่รองรับ {{ analystSymbol }}</span>
+                <span style="font-size:10px;color:rgba(255,255,255,0.28);line-height:1.5;">ตอนนี้คำนวณสัญญาณได้เฉพาะ BTC/ETH (ข้อมูลราคาฟรีจาก Binance) — หุ้น/ทองคำ/SET ต้องมี API key จากผู้ให้บริการข้อมูลราคาก่อน</span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ swingHasData }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;min-height:0;overflow-y:auto;padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;">
+                <div>
+                  <span style="{{ swingBadgeStyle }}">{{ swingBadgeText }}</span>
+                  <div style="margin-top:6px;font-size:10.5px;color:rgba(255,255,255,0.45);line-height:1.5;">{{ swingSignalDetail }}</div>
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                  <div style="flex:1;padding:9px 10px;border-radius:10px;background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.22);">
+                    <div style="font-size:8px;letter-spacing:0.1em;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:4px;">แนวต้าน (Call OI Wall)</div>
+                    <sc-for list="{{ swingResistanceList }}" as="r" hint-placeholder-count="2">
+                      <div style="margin-top:5px;">
+                        <div style="font-size:13px;font-weight:700;color:#fb7185;font-family:'Space Grotesk',sans-serif;">{{ r.strikeStr }}</div>
+                        <div style="font-size:8.5px;color:rgba(255,255,255,0.3);">{{ r.oiStr }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="flex:1;padding:9px 10px;border-radius:10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.22);">
+                    <div style="font-size:8px;letter-spacing:0.1em;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:4px;">แนวรับ (Put OI Wall)</div>
+                    <sc-for list="{{ swingSupportList }}" as="s" hint-placeholder-count="2">
+                      <div style="margin-top:5px;">
+                        <div style="font-size:13px;font-weight:700;color:#34d399;font-family:'Space Grotesk',sans-serif;">{{ s.strikeStr }}</div>
+                        <div style="font-size:8.5px;color:rgba(255,255,255,0.3);">{{ s.oiStr }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <div style="padding:9px 10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:8px;letter-spacing:0.1em;color:rgba(255,255,255,0.35);text-transform:uppercase;">Options Open Interest</div>
+                    <div style="font-size:8.5px;color:rgba(255,255,255,0.25);margin-top:1px;">Deribit · {{ analystSymbol }} Options ทั้งหมด</div>
+                  </div>
+                  <div style="font-size:13px;font-weight:700;color:#e2e8f0;font-family:'Space Grotesk',sans-serif;">{{ swingOIStr }}</div>
+                </div>
+
+                <div style="padding:9px 10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;">
+                  <div style="font-size:8px;letter-spacing:0.1em;color:rgba(255,255,255,0.35);text-transform:uppercase;">Put/Call Ratio</div>
+                  <div style="font-size:13px;font-weight:700;color:#e2e8f0;font-family:'Space Grotesk',sans-serif;">{{ swingPCRStr }}</div>
+                </div>
+
+                <div style="font-size:9px;color:rgba(255,255,255,0.25);text-align:right;">ราคาล่าสุด {{ swingPriceStr }} · รายวัน</div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- OPTIONS: Chain -->
+      <sc-if value="{{ optionsActive }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="padding:13px 15px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;">
+            <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.14em;color:rgba(255,255,255,0.25);margin-bottom:3px;">OPTIONS CHAIN · {{ optionsData.sym }}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:13px;font-weight:700;color:#8b5cf6;">ออปชัน</div>
+              <span style="font-size:9px;font-family:'Space Grotesk',sans-serif;color:rgba(255,255,255,0.3);">Exp: {{ optionsData.expiry }}</span>
+            </div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:10px 12px;">
+
+            <!-- IV + PCR gauges -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+              <div style="padding:9px;border-radius:7px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);">
+                <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;color:rgba(255,255,255,0.3);letter-spacing:0.1em;margin-bottom:5px;">IV INDEX</div>
+                <div style="font-size:16px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#8b5cf6;margin-bottom:5px;">{{ optionsData.ivStr }}</div>
+                <div style="height:2px;background:rgba(255,255,255,0.07);border-radius:1px;">
+                  <div style="height:100%;border-radius:1px;background:#8b5cf6;width:{{ optionsData.ivBar }};"></div>
+                </div>
+              </div>
+              <div style="padding:9px;border-radius:7px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);">
+                <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;color:rgba(255,255,255,0.3);letter-spacing:0.1em;margin-bottom:5px;">PUT/CALL</div>
+                <div style="font-size:16px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#f43f5e;margin-bottom:5px;">{{ optionsData.pcrStr }}</div>
+                <div style="height:2px;background:rgba(255,255,255,0.07);border-radius:1px;">
+                  <div style="height:100%;border-radius:1px;background:#f43f5e;width:{{ optionsData.pcrBar }};"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Max Pain -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:6px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);margin-bottom:12px;">
+              <span style="font-size:9px;font-family:'Space Grotesk',sans-serif;color:rgba(255,255,255,0.4);letter-spacing:0.1em;">MAX PAIN</span>
+              <span style="font-size:14px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#f59e0b;">{{ optionsData.maxPainStr }}</span>
+            </div>
+
+            <!-- Chain header -->
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:4px;padding:4px 6px;margin-bottom:4px;">
+              <span style="font-size:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#10b981;letter-spacing:0.1em;">CALLS</span>
+              <span style="font-size:8px;font-family:'Space Grotesk',sans-serif;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-align:center;">STRIKE</span>
+              <span style="font-size:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#f43f5e;letter-spacing:0.1em;text-align:right;">PUTS</span>
+            </div>
+
+            <sc-for list="{{ fmtChain }}" as="row" hint-placeholder-count="5">
+              <div style="{{ row.wrapStyle }}">
+                <div style="text-align:left;">
+                  <div style="font-size:10px;font-family:'Space Grotesk',sans-serif;color:#10b981;font-weight:600;">{{ row.callOIStr }}</div>
+                  <div style="font-size:9px;color:rgba(255,255,255,0.28);">Δ {{ row.callDeltaStr }}</div>
+                </div>
+                <div style="text-align:center;padding:0 6px;">
+                  <div style="font-size:12px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:#fff;">{{ row.strikeStr }}</div>
+                  <div style="font-size:8px;color:rgba(255,255,255,0.25);">{{ row.callIVStr }}</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:10px;font-family:'Space Grotesk',sans-serif;color:#f43f5e;font-weight:600;">{{ row.putOIStr }}</div>
+                  <div style="font-size:9px;color:rgba(255,255,255,0.28);">Δ {{ row.putDeltaStr }}</div>
+                </div>
+              </div>
+            </sc-for>
+
+            <!-- Greeks -->
+            <div style="margin-top:12px;padding:10px;border-radius:8px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);">
+              <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.14em;color:rgba(255,255,255,0.3);margin-bottom:8px;">ATM GREEKS</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">
+                <div>
+                  <div style="font-size:8px;color:rgba(255,255,255,0.3);margin-bottom:2px;">Delta</div>
+                  <div style="font-size:12px;font-family:'Space Grotesk',sans-serif;font-weight:600;color:#e2e8f0;">{{ greeks.delta }}</div>
+                </div>
+                <div>
+                  <div style="font-size:8px;color:rgba(255,255,255,0.3);margin-bottom:2px;">Gamma</div>
+                  <div style="font-size:12px;font-family:'Space Grotesk',sans-serif;font-weight:600;color:#e2e8f0;">{{ greeks.gamma }}</div>
+                </div>
+                <div>
+                  <div style="font-size:8px;color:rgba(255,255,255,0.3);margin-bottom:2px;">Theta</div>
+                  <div style="font-size:12px;font-family:'Space Grotesk',sans-serif;font-weight:600;color:#f43f5e;">{{ greeks.theta }}</div>
+                </div>
+                <div>
+                  <div style="font-size:8px;color:rgba(255,255,255,0.3);margin-bottom:2px;">Vega</div>
+                  <div style="font-size:12px;font-family:'Space Grotesk',sans-serif;font-weight:600;color:#e2e8f0;">{{ greeks.vega }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SYSTEM: Monitor -->
+      <sc-if value="{{ systemActive }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:13px 13px 13px;">
+          <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:10px;margin-bottom:13px;flex-shrink:0;">
+            <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.14em;color:rgba(255,255,255,0.25);margin-bottom:3px;">SYSTEM MONITOR</div>
+            <div style="font-size:13px;font-weight:700;color:#f59e0b;">สถานะระบบ</div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;color:rgba(255,255,255,0.45);">CPU Usage</span>
+              <span style="font-size:11px;font-family:'Space Grotesk',sans-serif;font-weight:600;color:{{ cpuColor }};">{{ cpuStr }}</span>
+            </div>
+            <div style="height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;">
+              <div style="height:100%;border-radius:2px;background:{{ cpuColor }};width:{{ cpuW }};transition:width 0.9s ease;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;color:rgba(255,255,255,0.45);">Memory</span>
+              <span style="font-size:11px;font-family:'Space Grotesk',sans-serif;font-weight:600;color:{{ memColor }};">{{ memStr }}</span>
+            </div>
+            <div style="height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;">
+              <div style="height:100%;border-radius:2px;background:{{ memColor }};width:{{ memW }};transition:width 0.9s ease;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.14em;color:rgba(255,255,255,0.25);margin-bottom:9px;">API CONNECTIONS</div>
+            <sc-for list="{{ systemMetrics.apiStatus }}" as="api" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:5px;height:5px;border-radius:50%;background:#10b981;box-shadow:0 0 4px #10b981;animation:glowPulse 2s infinite;"></div>
+                  <span style="font-size:11px;color:rgba(255,255,255,0.52);">{{ api.name }}</span>
+                </div>
+                <span style="font-size:10px;font-family:'Space Grotesk',sans-serif;color:rgba(255,255,255,0.3);">{{ api.latency }}ms</span>
+              </div>
+            </sc-for>
+          </div>
+          <div>
+            <div style="font-size:8px;font-family:'Space Grotesk',sans-serif;letter-spacing:0.14em;color:rgba(255,255,255,0.25);margin-bottom:9px;">AGENT STATUS</div>
+            <sc-for list="{{ systemMetrics.agents }}" as="ag" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;margin-bottom:5px;border-radius:7px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);">
+                <div style="display:flex;align-items:center;gap:7px;">
+                  <div style="width:7px;height:7px;border-radius:50%;background:{{ ag.color }};box-shadow:0 0 6px {{ ag.color }};"></div>
+                  <span style="font-size:12px;color:#e2e8f0;">{{ ag.name }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:10px;color:rgba(255,255,255,0.28);font-family:'Space Grotesk',sans-serif;">{{ ag.tasks }} tasks</span>
+                  <div style="width:5px;height:5px;border-radius:50%;background:#10b981;animation:glowPulse 1.6s infinite;"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+// ธีมสีเดียวกับหน้า TAWEE และ AI Agent Dashboard — ซิงก์กันผ่าน 'TAWEE_cfg_v3'
+const TAWEE_CFG_KEY = 'TAWEE_cfg_v3';
+const THEME_IDS = ['emerald','sapphire','amethyst','bronze','wine'];
+function loadSharedThemeIdx(){
+  try{
+    const raw = localStorage.getItem(TAWEE_CFG_KEY);
+    if(raw){ const idx = THEME_IDS.indexOf(JSON.parse(raw).theme); if(idx>=0) return idx; }
+  }catch(e){}
+  return 0;
+}
+function saveSharedTheme(idx){
+  try{
+    const cfg = JSON.parse(localStorage.getItem(TAWEE_CFG_KEY)||'{}');
+    cfg.theme = THEME_IDS[idx];
+    localStorage.setItem(TAWEE_CFG_KEY, JSON.stringify(cfg));
+  }catch(e){}
+}
+
+class Component extends DCLogic {
+  PALETTE = [
+    {hex:'#0FAE7D', rgb:[15,174,125]},
+    {hex:'#3568D4', rgb:[53,104,212]},
+    {hex:'#7B4FE0', rgb:[123,79,224]},
+    {hex:'#C97C3D', rgb:[201,124,61]},
+    {hex:'#B0304B', rgb:[176,48,75]},
+  ];
+
+  state = {
+    activeAgent: 'analyst',
+    themeIdx: loadSharedThemeIdx(),
+    optionsData: {
+      sym:'SET50', expiry:'25 Jul 2026',
+      pcr:0.72, iv:18.4, maxPain:1285,
+      chain:[
+        {strike:1280,callOI:12450,callIV:16.2,callDelta:0.72,putOI:8920, putIV:19.1,putDelta:0.28,atm:false},
+        {strike:1290,callOI:18920,callIV:17.1,callDelta:0.58,putOI:14560,putIV:18.2,putDelta:0.42,atm:false},
+        {strike:1300,callOI:24310,callIV:18.4,callDelta:0.44,putOI:19870,putIV:17.5,putDelta:0.56,atm:true },
+        {strike:1310,callOI:15670,callIV:19.8,callDelta:0.31,putOI:13210,putIV:17.0,putDelta:0.69,atm:false},
+        {strike:1320,callOI:9840, callIV:21.3,callDelta:0.20,putOI:7650, putIV:16.8,putDelta:0.80,atm:false},
+      ],
+      greeks:{delta:0.44,gamma:0.013,theta:-3.10,vega:0.58},
+    },
+    systemMetrics:{
+      cpu:42,mem:67,
+      apiStatus:[
+        {name:'Webull API', latency:42 },
+        {name:'SET News',   latency:87 },
+        {name:'RSS Scanner',latency:156},
+        {name:'AI Engine',  latency:23 },
+      ],
+      agents:[
+        {name:'นักข่าว',        color:'#10b981',tasks:8 },
+        {name:'Options',        color:'#8b5cf6',tasks:12},
+        {name:'วิเคราะห์ระบบ', color:'#f59e0b',tasks:5 },
+      ],
+    },
+    time: new Date(),
+    analystSymbol:'NVDA',
+    voiceListening:false,
+    voiceMsg:'กดไมค์แล้วพูดชื่อหุ้น เพื่อสั่งดูกราฟ',
+    swingLoading:false, swingHasData:false, swingUnsupported:false, swingData:null,
+    activeBoard:null, // null | 'payoff' | 'planning' — เครื่องมือที่สลับมาแทนกราฟตอนนี้
+    boardFullscreen:false, // true = ขยาย payoff/planning panel ที่เปิดอยู่เต็มจอ
+  };
+
+  canvasRef = React.createRef();
+  marketOverviewRef = React.createRef();
+  analystChartRef = React.createRef();
+  lwChartRef = React.createRef();
+  payoffFrameRef = React.createRef();
+  planningFrameRef = React.createRef();
+  textInputRef = React.createRef();
+  agentOrbRef = React.createRef();
+  animFrame  = null;
+  agentOrbFrame = null;
+  agentOrbColor = [59,130,246];
+  curColor   = this.PALETTE[loadSharedThemeIdx()].rgb.slice();
+  symList = ['NVDA','TSLA','AAPL','MSFT','GOOGL','AMZN','META','AMD','NFLX','JPM','V','WMT','DIS','BA','COIN','PLTR','BTC','ETH','XAU','SET'];
+
+  // สัญลักษณ์จริงบน TradingView สำหรับแต่ละ ticker ในแอปนี้
+  TV_SYMBOLS = {
+    NVDA:'NASDAQ:NVDA', TSLA:'NASDAQ:TSLA', AAPL:'NASDAQ:AAPL',
+    MSFT:'NASDAQ:MSFT', GOOGL:'NASDAQ:GOOGL', AMZN:'NASDAQ:AMZN', META:'NASDAQ:META',
+    AMD:'NASDAQ:AMD', NFLX:'NASDAQ:NFLX', JPM:'NYSE:JPM', V:'NYSE:V',
+    WMT:'NYSE:WMT', DIS:'NYSE:DIS', BA:'NYSE:BA', COIN:'NASDAQ:COIN', PLTR:'NASDAQ:PLTR',
+    BTC:'BINANCE:BTCUSDT', ETH:'BINANCE:ETHUSDT', XAU:'OANDA:XAUUSD', SET:'SET:SET',
+  };
+  TV_TICKER_SYMBOLS = [
+    {proName:'SET:SET',         title:'SET'},
+    {proName:'FOREXCOM:SPXUSD', title:'S&P'},
+    {proName:'OANDA:NAS100USD', title:'NDX'},
+    {proName:'OANDA:XAUUSD',    title:'XAU'},
+    {proName:'BINANCE:BTCUSDT', title:'BTC'},
+    {proName:'NASDAQ:AAPL',     title:'AAPL'},
+    {proName:'NASDAQ:NVDA',     title:'NVDA'},
+    {proName:'NASDAQ:TSLA',     title:'TSLA'},
+  ];
+
+  agents = {
+    analyst:{id:'analyst',name:'นักวิเคราะห์',en:'Market Analyst',
+      hex:'#3b82f6',color:[59,130,246],
+      tasks:['ติดตามราคาจริงแบบเรียลไทม์จาก TradingView','เปิดใช้อินดิเคเตอร์ RSI / MA บนกราฟ','รับคำสั่งดูกราฟด้วยเสียง']},
+    options:{id:'options',name:'นักวิเคราะห์ Options',en:'Options Analyst',
+      hex:'#8b5cf6',color:[139,92,246],
+      tasks:['คำนวณ Greeks ออปชัน ATM','ติดตาม IV Surface & Skew','วิเคราะห์ Put/Call Ratio']},
+    system:{id:'system',name:'นักวิเคราะห์ระบบ',en:'System Analyst',
+      hex:'#f59e0b',color:[245,158,11],
+      tasks:['ตรวจสอบ Portfolio Risk','Monitor API Connections','ประเมิน System Performance']},
+  };
+
+  componentDidMount(){
+    setTimeout(()=>this.initCanvas(), 80);
+    setTimeout(()=>this.initAgentOrb(), 80);
+    setTimeout(()=>this.mountMarketOverview(), 80);
+    if(this.state.activeAgent==='analyst'){
+      this._afterLayout(()=>{ this._mountChartForSymbol(); });
+    }
+    this._clock = setInterval(()=>this.setState({time:new Date()}),1000);
+    this._onEscKey = (e)=>{ if(e.key==='Escape' && this.state.boardFullscreen) this.setState({boardFullscreen:false}); };
+    window.addEventListener('keydown', this._onEscKey);
+  }
+
+  // BTC/ETH ใช้กราฟของเราเอง (มีเส้น OI wall) หุ้นตัวอื่นใช้ TradingView iframe ตามเดิม
+  _mountChartForSymbol(){
+    if(!this.SWING_DATA_SOURCES[this.state.analystSymbol]){
+      this._disposeCustomChart();
+      this.mountAnalystChart();
+    }
+    this.loadSwingSignal();
+  }
+
+  // รอให้ layout นิ่งก่อนฝัง TradingView widget (กัน autosize จับขนาดกล่องผิดตอนเพิ่งเมาท์)
+  // ใช้ rAF ตอนแท็บ active แต่ถ้าแท็บถูกซ่อนอยู่ (rAF จะไม่ยิงเลย) ใช้ setTimeout สำรองแทน
+  _afterLayout(cb){
+    if(document.hidden){ setTimeout(cb, 60); return; }
+    requestAnimationFrame(()=>requestAnimationFrame(cb));
+  }
+
+  componentWillUnmount(){
+    cancelAnimationFrame(this.animFrame);
+    cancelAnimationFrame(this.agentOrbFrame);
+    clearInterval(this._clock);
+    if(this._onEscKey) window.removeEventListener('keydown', this._onEscKey);
+    if(this._ro) this._ro.disconnect();
+    if(this._voiceInput) this._voiceInput.stop(true);
+    if(window.SonioxTTS) window.SonioxTTS.resetBargeIn();
+    this._disposeCustomChart();
+  }
+
+  // ── ฝัง TradingView widget จริง แทนข้อมูลจำลอง ──
+  _mountTVWidget(ref, scriptSrc, config){
+    const el = ref.current; if(!el) return;
+    // สคริปต์ TradingView จะสร้าง div ห่อ iframe (สูง 100%) ต่อท้ายเอง
+    // ห้ามใส่ div เปล่าไว้ก่อน ไม่งั้นกราฟถูกดันลงไปนอกกล่องจนมองไม่เห็น
+    el.innerHTML = '';
+    const script = document.createElement('script');
+    script.src = scriptSrc;
+    script.async = true;
+    script.type = 'text/javascript';
+    script.text = JSON.stringify(config);
+    el.appendChild(script);
+  }
+
+  mountMarketOverview(){
+    this._mountTVWidget(this.marketOverviewRef, 'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js', {
+      colorTheme: 'dark',
+      dateRange: '1D',
+      showChart: false,
+      locale: 'th',
+      isTransparent: true,
+      width: '100%',
+      height: '100%',
+      plotLineColorGrowing: 'rgba(16,185,129,1)',
+      plotLineColorFalling: 'rgba(244,63,94,1)',
+      tabs: [{ title:'Watchlist', symbols: this.TV_TICKER_SYMBOLS.map(s=>({s:s.proName, d:s.title})) }],
+    });
+  }
+
+  mountAnalystChart(){
+    this._mountTVWidget(this.analystChartRef, 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js', {
+      autosize: true,
+      symbol: this.TV_SYMBOLS[this.state.analystSymbol] || 'NASDAQ:NVDA',
+      interval: '15',
+      timezone: 'Asia/Bangkok',
+      theme: 'dark',
+      style: '1',
+      locale: 'th',
+      backgroundColor: 'rgba(2,12,24,1)',
+      gridColor: 'rgba(255,255,255,0.06)',
+      hide_top_toolbar: false,
+      hide_legend: false,
+      allow_symbol_change: false,
+      support_host: 'https://www.tradingview.com',
+    });
+  }
+
+  // ── มุมขวาล่าง: สัญญาณ Swing Trade + แนวรับ/แนวต้าน + Open Interest ──
+  // คำนวณเองจากราคาจริง (ไม่ใช่ TradingView widget) โดยใช้ logic เดียวกับอินดิเคเตอร์ OS Trend ของผู้ใช้
+  // (EMA21/55/100 + SuperTrend factor 3, ATR 10) — รองรับเฉพาะ BTC/ETH ตอนนี้ เพราะเป็นแหล่งข้อมูลราคาฟรีที่ไม่ต้องใช้ API key
+  // (Binance) เท่านั้นที่หาได้ — หุ้น/ทองคำ/SET ต้องมี API key จากผู้ให้บริการข้อมูลราคาถึงจะเปิดใช้ได้
+  SWING_DATA_SOURCES = { BTC: 'BTCUSDT', ETH: 'ETHUSDT' };
+  // สกุลเงินออปชันบน Deribit ที่ตรงกับแต่ละ symbol (ใช้ดึง Open Interest จริง)
+  DERIBIT_CURRENCY = { BTC: 'BTC', ETH: 'ETH' };
+
+  _emaSeries(vals, period){
+    const k = 2/(period+1);
+    const out = []; let prev;
+    for(let i=0;i<vals.length;i++){ prev = i===0 ? vals[i] : vals[i]*k + prev*(1-k); out.push(prev); }
+    return out;
+  }
+  _atrSeries(highs, lows, closes, period){
+    const tr = highs.map((h,i)=> i===0 ? h-lows[i] : Math.max(h-lows[i], Math.abs(h-closes[i-1]), Math.abs(lows[i]-closes[i-1])));
+    return this._emaSeries(tr, period);
+  }
+  _superTrendDir(highs, lows, closes, factor, atrPeriod){
+    const atr = this._atrSeries(highs, lows, closes, atrPeriod);
+    const n = closes.length;
+    const upperBand=new Array(n), lowerBand=new Array(n), dir=new Array(n);
+    let prevUpper=0, prevLower=0, prevDir=1;
+    for(let i=0;i<n;i++){
+      const mid=(highs[i]+lows[i])/2;
+      const basicUpper=mid+factor*atr[i], basicLower=mid-factor*atr[i];
+      if(i===0){ upperBand[i]=basicUpper; lowerBand[i]=basicLower; dir[i]= closes[i]>basicUpper ? 1 : -1; }
+      else{
+        upperBand[i]=(basicUpper<prevUpper || closes[i-1]>prevUpper) ? basicUpper : prevUpper;
+        lowerBand[i]=(basicLower>prevLower || closes[i-1]<prevLower) ? basicLower : prevLower;
+        dir[i]= prevDir===1 ? (closes[i]<lowerBand[i] ? -1 : 1) : (closes[i]>upperBand[i] ? 1 : -1);
+      }
+      prevUpper=upperBand[i]; prevLower=lowerBand[i]; prevDir=dir[i];
+    }
+    return dir; // 1 = ขาขึ้น (bullish), -1 = ขาลง (bearish)
+  }
+  // ผลลัพธ์เดียวกับตัวแปร inCC ในสคริปต์ OS Trend ของผู้ใช้: true = อยู่ในโซน Cover Call (เทรนด์ขึ้นยืนยันแล้ว 3 ชั้น)
+  _computeSwingSignal(candles){
+    const closes=candles.map(c=>c.c), highs=candles.map(c=>c.h), lows=candles.map(c=>c.l);
+    const e1=this._emaSeries(closes,21), e2=this._emaSeries(closes,55), e3=this._emaSeries(closes,100);
+    const stDir=this._superTrendDir(highs,lows,closes,3.0,10);
+    const n=closes.length;
+    let inCC=false, lastSignal=null, lastSignalIdx=-1;
+    for(let i=1;i<n;i++){
+      const crossUp = e1[i-1]<=e2[i-1] && e1[i]>e2[i];
+      const crossDown = e1[i-1]>=e2[i-1] && e1[i]<e2[i];
+      if(crossUp && closes[i]>e3[i] && stDir[i]===1){ inCC=true; lastSignal='buy'; lastSignalIdx=i; }
+      if(crossDown && closes[i]<e3[i] && stDir[i]===-1){ inCC=false; lastSignal='sell'; lastSignalIdx=i; }
+    }
+    return { inCC, lastSignal, barsAgo: lastSignalIdx>=0 ? (n-1-lastSignalIdx) : null };
+  }
+
+  // แนวรับ/แนวต้านจาก OI จริง (OI wall) — แนวต้าน = strike เหนือราคาที่มี Call OI มากสุด, แนวรับ = strike ใต้ราคาที่มี Put OI มากสุด
+  _computeOIWalls(optResult, price){
+    const byStrike = {};
+    let totalCall=0, totalPut=0;
+    optResult.forEach(o=>{
+      const parts = o.instrument_name.split('-'); // BTC-12JUL26-59000-C
+      const strike = +parts[2];
+      if(!strike) return;
+      const isCall = parts[3] === 'C';
+      const oi = o.open_interest || 0;
+      if(!byStrike[strike]) byStrike[strike] = { strike, call:0, put:0 };
+      byStrike[strike][isCall ? 'call' : 'put'] += oi;
+      if(isCall) totalCall += oi; else totalPut += oi;
+    });
+    const strikes = Object.values(byStrike);
+    const resistances = strikes.filter(s=>s.strike>price).sort((a,b)=>b.call-a.call).slice(0,2);
+    const supports = strikes.filter(s=>s.strike<price).sort((a,b)=>b.put-a.put).slice(0,2);
+    return { resistances, supports, totalCall, totalPut };
+  }
+
+  async loadSwingSignal(){
+    const sym = this.state.analystSymbol;
+    const binanceSym = this.SWING_DATA_SOURCES[sym];
+    if(!binanceSym){
+      this.setState({swingLoading:false, swingHasData:false, swingUnsupported:true, swingData:null});
+      return;
+    }
+    this.setState({swingLoading:true, swingUnsupported:false});
+    try{
+      // Deribit = ตลาด Options ที่ใหญ่ที่สุดของ BTC/ETH มี OI จริงระดับสัญญา ให้ฟรีผ่าน public API ไม่ต้องใช้ key
+      const deribitCcy = this.DERIBIT_CURRENCY[sym] || 'BTC';
+      const [klineRes, optRes] = await Promise.all([
+        fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSym}&interval=1d&limit=200`),
+        fetch(`https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=${deribitCcy}&kind=option`),
+      ]);
+      const klines = await klineRes.json();
+      const optData = await optRes.json();
+      if(!Array.isArray(klines) || !klines.length) throw new Error('no candle data');
+      const candles = klines.map(k=>({t:k[0], o:+k[1], h:+k[2], l:+k[3], c:+k[4]}));
+      const price = candles[candles.length-1].c;
+      const signal = this._computeSwingSignal(candles);
+      const walls = this._computeOIWalls(optData.result||[], price);
+      if(this.state.analystSymbol !== sym) return; // ผู้ใช้สลับหุ้นไปแล้วระหว่างรอโหลด
+      this.setState({
+        swingLoading:false, swingHasData:true, swingUnsupported:false,
+        swingData:{ ...signal, price,
+          resistances: walls.resistances, supports: walls.supports,
+          oi: walls.totalCall+walls.totalPut || null,
+          oiCalls: walls.totalCall, oiPuts: walls.totalPut,
+          putCallRatio: walls.totalCall>0 ? walls.totalPut/walls.totalCall : null },
+      });
+      this._renderCustomChart(candles, walls, sym);
+    }catch(e){
+      if(this.state.analystSymbol !== sym) return;
+      this.setState({swingLoading:false, swingHasData:false, swingUnsupported:true, swingData:null});
+    }
+  }
+
+  // ── กราฟของเราเอง (เฉพาะ BTC) — ใช้ TradingView Lightweight Charts (ไลบรารีฟรีแยกจาก embed widget)
+  // เพื่อวาดเส้นแนวรับ/แนวต้านจาก OI wall ลงบนกราฟจริงได้ ซึ่ง embed widget ทำไม่ได้ (คนละโดเมน สั่งวาดจากภายนอกไม่ได้)
+  _ensureLightweightCharts(){
+    if(window.LightweightCharts) return Promise.resolve();
+    if(this._lwLoadPromise) return this._lwLoadPromise;
+    this._lwLoadPromise = new Promise((resolve, reject)=>{
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js';
+      s.onload = ()=>resolve();
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    return this._lwLoadPromise;
+  }
+
+  _disposeCustomChart(){
+    if(this._lwRO){ this._lwRO.disconnect(); this._lwRO=null; }
+    if(this._lwChart){ try{ this._lwChart.remove(); }catch(e){} this._lwChart=null; this._lwCandleSeries=null; }
+  }
+
+  async _renderCustomChart(candles, walls, sym){
+    try{ await this._ensureLightweightCharts(); }catch(e){ return; }
+    if(this.state.analystSymbol !== sym) return; // ผู้ใช้สลับหุ้นไปแล้วระหว่างรอโหลดไลบรารี
+    const container = this.lwChartRef.current;
+    if(!container) return;
+    this._disposeCustomChart();
+
+    const chart = LightweightCharts.createChart(container, {
+      width: container.clientWidth, height: container.clientHeight,
+      layout: { background:{ color:'transparent' }, textColor:'rgba(255,255,255,0.5)' },
+      grid: { vertLines:{ color:'rgba(255,255,255,0.06)' }, horzLines:{ color:'rgba(255,255,255,0.06)' } },
+      timeScale: { borderColor:'rgba(255,255,255,0.1)' },
+      rightPriceScale: { borderColor:'rgba(255,255,255,0.1)' },
+      crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    });
+    const series = chart.addCandlestickSeries({
+      upColor:'#10b981', downColor:'#f43f5e', borderVisible:false,
+      wickUpColor:'#10b981', wickDownColor:'#f43f5e',
+    });
+    series.setData(candles.map(c=>({ time: Math.floor(c.t/1000), open:c.o, high:c.h, low:c.l, close:c.c })));
+
+    (walls.resistances||[]).forEach((r,i)=>{
+      series.createPriceLine({ price: r.strike, color: i===0?'#fb7185':'rgba(251,113,133,0.55)', lineWidth: i===0?2:1,
+        lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible:true,
+        title:`Call OI ${r.strike}` });
+    });
+    (walls.supports||[]).forEach((s,i)=>{
+      series.createPriceLine({ price: s.strike, color: i===0?'#34d399':'rgba(52,211,153,0.55)', lineWidth: i===0?2:1,
+        lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible:true,
+        title:`Put OI ${s.strike}` });
+    });
+
+    chart.timeScale().fitContent();
+    this._lwChart = chart; this._lwCandleSeries = series;
+    this._lwRO = new ResizeObserver(()=>{
+      if(!this._lwChart) return;
+      this._lwChart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+    });
+    this._lwRO.observe(container);
+  }
+
+  // อวตารเล็กมุมบนซ้าย (ตรงการ์ด ACTIVE AGENT) — สไตล์เดียวกับออร์บของหน้า Agent โพสต์ แต่ไล่สีตาม agent ที่เลือก
+  initAgentOrb(){
+    const canvas = this.agentOrbRef.current;
+    if(!canvas) return;
+    const dpr = Math.min(window.devicePixelRatio||1, 2);
+    const size = 92;
+    canvas.width = size*dpr; canvas.height = size*dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr,dpr);
+    const cx=size/2, cy=size/2;
+    const pts = Array.from({length:70},()=>({
+      a:Math.random()*Math.PI*2, br:8+Math.random()*30, dr:Math.random()*Math.PI*2,
+      da:Math.random()*6+1.5, ds:Math.random()*.02+.004,
+      sp:(Math.random()>.5?1:-1)*(Math.random()*.008+.002), sz:Math.random()*1.6+.3, al:Math.random()*.55+.15,
+    }));
+    const c = this.agentOrbColor;
+    let t=0;
+    const draw=()=>{
+      this.agentOrbFrame = requestAnimationFrame(draw);
+      t += .013;
+      const target = this.agents[this.state.activeAgent].color;
+      c[0]+=(target[0]-c[0])*0.05; c[1]+=(target[1]-c[1])*0.05; c[2]+=(target[2]-c[2])*0.05;
+      const rgb = `${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])}`;
+
+      ctx.clearRect(0,0,size,size);
+      ctx.beginPath();
+      for(let i=0;i<=90;i++){
+        const a=(i/90)*Math.PI*2;
+        const n=Math.sin(a*2+t*.9)*4+Math.sin(a*4-t*1.3)*2.6;
+        const r=size*0.26+n;
+        i===0?ctx.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r):ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);
+      }
+      ctx.closePath();
+      ctx.strokeStyle=`rgba(${rgb},${.28+Math.sin(t*.7)*.09})`;
+      ctx.lineWidth=1.3; ctx.stroke();
+
+      const fill=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.26);
+      fill.addColorStop(0,`rgba(${rgb},.14)`); fill.addColorStop(1,'transparent');
+      ctx.fillStyle=fill; ctx.fill();
+
+      const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,size*0.09);
+      cg.addColorStop(0,'rgba(255,250,252,.97)'); cg.addColorStop(.3,`rgba(${rgb},.6)`); cg.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.09,0,Math.PI*2); ctx.fillStyle=cg; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx,cy,size*0.032+Math.sin(t*2.2)*.8,0,Math.PI*2); ctx.fillStyle='rgba(255,250,252,.95)'; ctx.fill();
+
+      pts.forEach(p=>{
+        p.a+=p.sp; p.dr+=p.ds;
+        const r=p.br+Math.sin(p.dr)*p.da;
+        const x=cx+Math.cos(p.a)*r, y=cy+Math.sin(p.a)*r;
+        const al=p.al*(0.45+0.55*Math.abs(Math.sin(p.dr*1.6)));
+        ctx.beginPath(); ctx.arc(x,y,p.sz,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${rgb},${al})`; ctx.fill();
+      });
+    };
+    draw();
+  }
+
+  initCanvas(){
+    const canvas = this.canvasRef.current;
+    if(!canvas) return;
+    const sync = ()=>{ canvas.width=canvas.offsetWidth||800; canvas.height=canvas.offsetHeight||600; };
+    sync();
+    this._ro = new ResizeObserver(sync);
+    this._ro.observe(canvas);
+
+    // Fibonacci particles
+    const N=150;
+    const pts = Array.from({length:N},(_,i)=>({
+      r:Math.sqrt(i/N), a:i*2.39996,
+      phase:Math.random()*Math.PI*2,
+      speed:0.1+Math.random()*0.3,
+      sz:0.8+Math.random()*2.2,
+      noise:Math.random()*100,
+    }));
+
+    const ctx = canvas.getContext('2d');
+    let t=0;
+    const c = this.curColor;
+
+    const draw=()=>{
+      this.animFrame = requestAnimationFrame(draw);
+      t  += 0.005;
+
+      const target = this.PALETTE[this.state.themeIdx].rgb;
+      c[0]+=(target[0]-c[0])*0.04;
+      c[1]+=(target[1]-c[1])*0.04;
+      c[2]+=(target[2]-c[2])*0.04;
+      const cr=Math.round(c[0]), cg=Math.round(c[1]), cb=Math.round(c[2]);
+
+      const W=canvas.width, H=canvas.height;
+      if(!W||!H) return;
+      const cx=W/2, cy=H/2;
+      const R=Math.min(W,H)*0.40;
+
+      ctx.clearRect(0,0,W,H);
+
+      // ── OUTER CORONA (breathing) ──
+      const brt=1+Math.sin(t*0.62)*0.08;
+      const corona=ctx.createRadialGradient(cx,cy,R*0.8,cx,cy,R*2.5*brt);
+      corona.addColorStop(0,   `rgba(${cr},${cg},${cb},0.08)`);
+      corona.addColorStop(0.4, `rgba(${cr},${cg},${cb},0.025)`);
+      corona.addColorStop(1,   'transparent');
+      ctx.fillStyle=corona;
+      ctx.beginPath(); ctx.arc(cx,cy,R*2.5*brt,0,Math.PI*2); ctx.fill();
+
+      // ── 3 EXPANDING PULSE RINGS ──
+      for(let k=0;k<3;k++){
+        const prog=(t*0.19+k/3)%1;
+        ctx.beginPath();
+        ctx.arc(cx,cy,R*(0.86+prog*0.82),0,Math.PI*2);
+        ctx.strokeStyle=`rgba(${cr},${cg},${cb},${(1-prog)*0.22})`;
+        ctx.lineWidth=1.5; ctx.stroke();
+      }
+
+      // ── ORGANIC BLOB ──
+      ctx.beginPath();
+      for(let i=0;i<=360;i++){
+        const angle=(i/360)*Math.PI*2;
+        let rad=R;
+        for(let k=2;k<9;k++) rad+=Math.sin(angle*k+t*(0.12+k*0.034))*R*0.028;
+        const x=cx+Math.cos(angle)*rad, y=cy+Math.sin(angle)*rad;
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle=`rgba(${cr},${cg},${cb},0.68)`;
+      ctx.lineWidth=1.5; ctx.stroke();
+
+      // ── INNER GLOW ──
+      const grd=ctx.createRadialGradient(cx,cy,0,cx,cy,R*0.74);
+      grd.addColorStop(0,   `rgba(${cr},${cg},${cb},0.2)`);
+      grd.addColorStop(0.55,`rgba(${cr},${cg},${cb},0.06)`);
+      grd.addColorStop(1,   'transparent');
+      ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(cx,cy,R*0.74,0,Math.PI*2); ctx.fill();
+
+      // ── FIBONACCI PARTICLES ──
+      pts.forEach(p=>{
+        const drift=Math.sin(p.noise+t*0.38)*0.038;
+        const pr=(p.r+drift)*R;
+        const angle=p.a+t*p.speed*0.011;
+        const x=cx+Math.cos(angle)*pr, y=cy+Math.sin(angle)*pr;
+        const fade=Math.max(0,1-pr/(R*1.06));
+        const pulse=0.55+0.45*Math.sin(t*1.7+p.phase);
+        const alpha=(0.26+fade*0.58)*(0.62+pulse*0.38);
+        const size=p.sz*(0.35+fade*0.75);
+        ctx.beginPath(); ctx.arc(x,y,size,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${cr},${cg},${cb},${alpha.toFixed(3)})`; ctx.fill();
+      });
+
+      // ── BRIGHT CORE ──
+      const core=ctx.createRadialGradient(cx,cy,0,cx,cy,R*0.19);
+      core.addColorStop(0,   'rgba(255,255,255,0.96)');
+      core.addColorStop(0.28,`rgba(${cr},${cg},${cb},0.85)`);
+      core.addColorStop(0.65,`rgba(${cr},${cg},${cb},0.3)`);
+      core.addColorStop(1,   'transparent');
+      ctx.fillStyle=core; ctx.beginPath(); ctx.arc(cx,cy,R*0.19,0,Math.PI*2); ctx.fill();
+    };
+
+    draw();
+  }
+
+  setAnalystSymbol(sym){
+    this.setState({analystSymbol:sym});
+    this._afterLayout(()=>{ this._mountChartForSymbol(); });
+  }
+
+  // ── สั่งงานด้วยเสียง (MediaRecorder + Worker /transcribe — เลิกใช้ browser SpeechRecognition ที่ค้างได้ไม่แจ้งเตือน) ──
+  toggleVoice(){
+    if(this.state.voiceListening){
+      if(this._voiceInput) this._voiceInput.stop(false);
+      return;
+    }
+    if(!window.TAWEEVoiceInput){ this.setState({voiceMsg:'โมดูลไมโครโฟนโหลดไม่สำเร็จ'}); return; }
+    if(!this._voiceInput) this._voiceInput = new TAWEEVoiceInput();
+    this._voiceInput.start({
+      onStateChange: (state)=>{
+        if(state==='listening') this.setState({voiceListening:true, voiceMsg:'กำลังฟัง...'});
+        else if(state==='processing_stt') this.setState({voiceMsg:'กำลังแปลงเสียง...'});
+        else if(state==='idle') this.setState({voiceListening:false});
+      },
+      onTranscript: (text)=>{ this.handleVoiceCommand(text); },
+      onError: (err)=>{ this.setState({voiceListening:false, voiceMsg: err.message || 'ไม่ได้ยิน ลองพูดอีกครั้ง'}); },
+    });
+  }
+
+  // ── ตัวตีความคำสั่งหลัก: ถ้ามี Claude API key (ใช้ตัวเดียวกับหน้าหลัก TAWEE) ให้ Claude ตีความ
+  // เข้าใจประโยคอิสระ/คำสั่งซ้อนกันได้ (เช่น "short put bitcoin 60000 วางแผน และสร้าง payoff chart")
+  // ถ้ายังไม่ได้ตั้ง key ไว้ ใช้การจับคำแบบเดิม (_handleVoiceCommandLocal) แทน
+  async handleVoiceCommand(text){
+    if(this._hasClaudeAccess()){
+      await this._runClaudeCommand(text);
+      return;
+    }
+    this._handleVoiceCommandLocal(text);
+  }
+
+  _getTAWEECfg(){
+    try{ return JSON.parse(localStorage.getItem('TAWEE_cfg_v3')||'{}'); }catch(e){ return {}; }
+  }
+  _hasClaudeAccess(){
+    return !!this._getTAWEECfg().apiKey;
+  }
+
+  _commandSysPrompt(){
+    return [
+      'คุณคือระบบตีความคำสั่งสำหรับแดชบอร์ดการเงิน (ไม่ใช่แชทบอทคุยเล่น) หน้าที่เดียวคือแปลงคำพูด/ข้อความของผู้ใช้เป็นคำสั่ง JSON เท่านั้น',
+      'ตอบกลับเป็น JSON ล้วนๆ ห้ามมี markdown code fence ห้ามมีข้อความอื่นนอกเหนือ JSON',
+      '',
+      'รูปแบบที่ต้องตอบ: {"actions":[...],"reply":"..."}',
+      '',
+      'actions แต่ละอันเป็นหนึ่งใน:',
+      '{"type":"switch_symbol","symbol":"NVDA|TSLA|AAPL|MSFT|GOOGL|AMZN|META|AMD|NFLX|JPM|V|WMT|DIS|BA|COIN|PLTR|BTC|ETH|XAU|SET"} — เปลี่ยนกราฟหลัก',
+      '{"type":"go_home"} — กลับไปหน้าหลัก TAWEE',
+      '{"type":"open_payoff_chart"} / {"type":"close_payoff_chart"}',
+      '{"type":"open_option_planning"} / {"type":"close_option_planning"}',
+      '{"type":"add_payoff_leg","asset":"crypto|gold|us_stock|set50|usd_future","optionType":"call|put|future","direction":"long|short","strike":number,"premium":number|null,"quantity":number} — เปิด Payoff Chart อัตโนมัติแล้วใส่ position เดียวตามที่ผู้ใช้บอก (ไม่ต้องเรียก open_payoff_chart ซ้ำ) ถ้าไม่บอก premium ให้ใส่ null',
+      '{"type":"apply_payoff_strategy","asset":"crypto|gold|us_stock|set50|usd_future"|null,"strategy":"<strategy key จากรายการด้านล่าง>"} — เปิด Payoff Chart แล้วสร้างกลยุทธ์หลายขา (multi-leg) จากชื่อสำเร็จรูป ใช้เมื่อผู้ใช้พูดชื่อกลยุทธ์ (เช่น "Iron Condor", "Covered Call") แทนที่จะบอก position เดียว',
+      '{"type":"set_planning_asset","asset":"crypto|gold|us_stock|set50|usd_future"} — เปิด Option Planning อัตโนมัติแล้วสลับสินทรัพย์ (ไม่ต้องเรียก open_option_planning ซ้ำ)',
+      '{"type":"set_planning_zone","asset":"crypto|gold|us_stock|set50|usd_future"|null,"topZone":number|null,"bottomZone":number|null,"distance":number|null,"rows":number|null,"contractSize":number|null} — เปิด Option Planning แล้วตั้งค่ากรอบบน/กรอบล่าง/ระยะห่างแต่ละไม้/จำนวนไม้/ขนาดสัญญาต่อไม้ ใส่เฉพาะค่าที่ผู้ใช้บอก ที่เหลือใส่ null (ระบบจะคงค่าเดิมไว้)',
+      '{"type":"expand_board"} — ขยาย Payoff Chart หรือ Option Planning ที่เปิดอยู่ตอนนี้ให้เต็มจอ (ใช้เมื่อผู้ใช้พูดว่า "ขยายเต็มจอ"/"เต็มจอ"/"ขยายจอ")',
+      '{"type":"collapse_board"} — ย่อกลับจากโหมดเต็มจอ (ใช้เมื่อผู้ใช้พูดว่า "ย่อจอ"/"ออกจากเต็มจอ"/"ย่อหน้าจอ")',
+      '',
+      'strategy key ที่ใช้ได้กับ apply_payoff_strategy (ต้องสะกดตรงตัวเป๊ะ):',
+      'พื้นฐาน: longCall, shortCall, longPut, shortPut',
+      'มี underlying คุม: coveredCall, protectivePut, coveredPut, cashSecuredPut',
+      'สเปรด: bullCallSpread, bearCallSpread, bullPutSpread, bearPutSpread, callDebitSpread, callCreditSpread, putDebitSpread, putCreditSpread',
+      'เดิมพันความผันผวน: longStraddle, shortStraddle, longStrangle, shortStrangle, gutStrangle, strangleModified',
+      'ขั้นสูง: ironCondor, ironButterfly, longCallButterfly, shortCallButterfly, longPutButterfly, shortPutButterfly, reverseIronCondor, reverseIronButterfly, jadeLizard, bigLizard',
+      'อัตราส่วน/ปฏิทิน: callRatioSpread, putRatioSpread, longCallCalendar, longPutCalendar, shortCallCalendar, shortPutCalendar, callRatioBackspread, putRatioBackspread, diagonalCallSpread, diagonalPutSpread',
+      'สังเคราะห์/อื่นๆ: collar, syntheticLong, syntheticShort, strap, strip, boxSpread, conversionArbitrage, reverseConversion, christmasTree, condorSpread',
+      '',
+      'กติกาการแมป asset: bitcoin/บิทคอยน์/คริปโต → crypto | ทองคำ/gold/XAU → gold | SET50 → set50 | ดอลลาร์/USD future → usd_future | หุ้นสหรัฐ/US stock → us_stock',
+      'ถ้าผู้ใช้พูดถึง position เฉพาะเจาะจงราคาเดียว (เช่น "short put bitcoin 60000") ให้ใช้ add_payoff_leg',
+      'ถ้าผู้ใช้พูดชื่อกลยุทธ์ (เช่น "iron condor", "covered call") ให้ใช้ apply_payoff_strategy แทน add_payoff_leg',
+      'ถ้าผู้ใช้บอกให้ "วางแผน" กรอบราคา/จำนวนไม้/ขนาดสัญญาด้วย ให้ใช้ set_planning_zone (ใส่ asset เดียวกับที่พูดถึง)',
+      'ถ้าผู้ใช้บอกแค่ "วางแผน" ลอยๆ ไม่มีตัวเลข ให้ใช้ set_planning_asset',
+      'ถ้าไม่มีคำสั่งที่เข้าใจได้เลย ให้ actions เป็น [] และอธิบายสั้นๆใน reply ว่าฟังไม่เข้าใจ',
+      'reply คือประโยคสั้นๆ ภาษาไทย 1 ประโยค สำหรับพูดยืนยันกับผู้ใช้',
+    ].join('\n');
+  }
+
+  async _runClaudeCommand(text){
+    const cfg = this._getTAWEECfg();
+    this.setState({voiceMsg:'กำลังตีความคำสั่งด้วย Claude…'});
+    try{
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{
+          'content-type':'application/json',
+          'x-api-key': cfg.apiKey,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true',
+        },
+        body: JSON.stringify({
+          model: cfg.model || 'claude-sonnet-4-5-20250929',
+          max_tokens: 600,
+          system: this._commandSysPrompt(),
+          messages: [{ role:'user', content: text }],
+        }),
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error((data.error && data.error.message) || ('HTTP '+res.status));
+      const raw = data.content?.[0]?.text || '{}';
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
+      await this._runActions(parsed.actions || []);
+      const reply = parsed.reply || 'ทำตามคำสั่งให้แล้วค่ะ';
+      this.setState({voiceMsg: reply});
+      this.speak(reply);
+    }catch(e){
+      this.setState({voiceMsg:'เชื่อมต่อ Claude ไม่สำเร็จ: '+e.message});
+    }
+  }
+
+  async _runActions(actions){
+    for(const a of actions){
+      try{ await this._runOneAction(a); }catch(e){}
+    }
+  }
+
+  async _runOneAction(a){
+    switch(a.type){
+      case 'switch_symbol':
+        if(this.symList.includes(a.symbol)) this.setAnalystSymbol(a.symbol);
+        break;
+      case 'go_home':
+        setTimeout(()=>{ window.location.href='../index.html'; }, 900);
+        break;
+      case 'open_payoff_chart':
+        this.setState({activeBoard:'payoff'});
+        break;
+      case 'close_payoff_chart':
+        if(this.state.activeBoard==='payoff'){ this.setState({activeBoard:null}); this._afterLayout(()=>this._mountChartForSymbol()); }
+        break;
+      case 'open_option_planning':
+        this.setState({activeBoard:'planning'});
+        break;
+      case 'close_option_planning':
+        if(this.state.activeBoard==='planning'){ this.setState({activeBoard:null}); this._afterLayout(()=>this._mountChartForSymbol()); }
+        break;
+      case 'add_payoff_leg':
+        await this._fillPayoffLeg(a);
+        break;
+      case 'apply_payoff_strategy':
+        await this._applyPayoffStrategy(a);
+        break;
+      case 'set_planning_asset':
+        await this._fillPlanningAsset(a.asset);
+        break;
+      case 'set_planning_zone':
+        await this._setPlanningZone(a);
+        break;
+      case 'expand_board':
+        if(this.state.activeBoard) this.setState({boardFullscreen:true});
+        break;
+      case 'collapse_board':
+        this.setState({boardFullscreen:false});
+        break;
+    }
+  }
+
+  toggleBoardFullscreen(){
+    this.setState({boardFullscreen:!this.state.boardFullscreen});
+  }
+
+  // รอจนกว่า iframe (same-origin) จะโหลดเสร็จและมีฟังก์ชันที่ต้องการให้เรียกจริง
+  _waitForFrame(ref, fnName, attempts){
+    attempts = attempts == null ? 40 : attempts;
+    return new Promise(resolve=>{
+      const check=(n)=>{
+        const win = ref.current && ref.current.contentWindow;
+        if(win && typeof win[fnName]==='function'){ resolve(win); return; }
+        if(n<=0){ resolve(null); return; }
+        setTimeout(()=>check(n-1), 50);
+      };
+      check(attempts);
+    });
+  }
+
+  async _fillPayoffLeg(leg){
+    const ASSET_MAP = { crypto:'crypto', gold:'gold', us_stock:'us-stock', set50:'set50', usd_future:'usdfuture' };
+    this.setState({activeBoard:'payoff'});
+    await new Promise(r=>setTimeout(r,120));
+    const win = await this._waitForFrame(this.payoffFrameRef, 'addLeg');
+    if(!win) return;
+    const assetKey = ASSET_MAP[leg.asset] || 'crypto';
+    win.updateAssetType(assetKey);
+    await new Promise(r=>setTimeout(r,60));
+    win.clearAll();
+    win.addLeg(leg.optionType || 'put', leg.direction || 'short', leg.strike, (leg.premium!=null ? leg.premium : null), leg.quantity || 1, null);
+  }
+
+  async _fillPlanningAsset(assetNorm){
+    const ASSET_MAP = { crypto:'crypto', gold:'gold', us_stock:'usstock', set50:'set50', usd_future:'usd' };
+    this.setState({activeBoard:'planning'});
+    await new Promise(r=>setTimeout(r,120));
+    const win = await this._waitForFrame(this.planningFrameRef, 'selectAsset');
+    if(!win) return;
+    const key = ASSET_MAP[assetNorm] || 'crypto';
+    const doc = this.planningFrameRef.current.contentDocument;
+    const btn = doc && doc.querySelector('.asset-btn.'+key);
+    if(btn) win.selectAsset(key, btn);
+  }
+
+  // สร้างกลยุทธ์หลายขา (multi-leg) จากชื่อสำเร็จรูปใน Payoff Chart เช่น ironCondor, coveredCall
+  async _applyPayoffStrategy(a){
+    const ASSET_MAP = { crypto:'crypto', gold:'gold', us_stock:'us-stock', set50:'set50', usd_future:'usdfuture' };
+    this.setState({activeBoard:'payoff'});
+    await new Promise(r=>setTimeout(r,120));
+    const win = await this._waitForFrame(this.payoffFrameRef, 'applyStrategy');
+    if(!win) return;
+    if(a.asset){
+      win.updateAssetType(ASSET_MAP[a.asset] || 'crypto');
+      await new Promise(r=>setTimeout(r,60));
+    }
+    win.applyStrategy(a.strategy);
+  }
+
+  // ตั้งกรอบบน/ล่าง/ระยะห่าง/จำนวนไม้/ขนาดสัญญาใน Option Planning — ใส่เฉพาะค่าที่มีมา ที่เหลือคงค่าเดิม
+  async _setPlanningZone(z){
+    const ASSET_MAP = { crypto:'crypto', gold:'gold', us_stock:'usstock', set50:'set50', usd_future:'usd' };
+    this.setState({activeBoard:'planning'});
+    await new Promise(r=>setTimeout(r,120));
+    const win = await this._waitForFrame(this.planningFrameRef, 'calculate');
+    if(!win) return;
+    const doc = this.planningFrameRef.current.contentDocument;
+    if(!doc) return;
+
+    // 1) สินทรัพย์ก่อน (selectAsset จะ reset ค่าอื่นเป็น default ของสินทรัพย์นั้น ต้องทำก่อนเสมอ)
+    if(z.asset){
+      const key = ASSET_MAP[z.asset] || 'crypto';
+      const btn = doc.querySelector('.asset-btn.'+key);
+      if(btn) win.selectAsset(key, btn);
+    }
+    // 2) จำนวนไม้ (changeSize จะ reset ขนาดสัญญารายไม้ด้วย ต้องทำก่อนตั้งขนาดสัญญา)
+    if(z.rows!=null){
+      const sizeBtn = [...doc.querySelectorAll('.btn-size')].find(b=>parseInt(b.textContent,10)===z.rows);
+      if(sizeBtn) win.changeSize(z.rows, sizeBtn);
+    }
+    // 3) กรอบบน/ล่าง แล้ว rebuild ตารางทั้งหมด
+    if(z.topZone!=null) doc.getElementById('topZone').value = z.topZone;
+    if(z.bottomZone!=null) doc.getElementById('bottomZone').value = z.bottomZone;
+    // ระยะห่าง (dist) เป็นตัวแปรภายในของหน้า iframe (ไม่ใช่ property ของ window) ต้องยิง event 'input' จริง
+    // ให้ handler ในหน้านั้นรับรู้เอง เซ็ต win.dist ตรงๆ จากภายนอกจะไม่มีผลกับการคำนวณจริง
+    if(z.distance!=null){
+      const distEl = doc.getElementById('distDefault');
+      distEl.value = z.distance;
+      distEl.dispatchEvent(new win.Event('input', { bubbles:true }));
+    }
+    win.calculate();
+    // 4) ขนาดสัญญาต่อไม้ (ทำหลังสุดเพราะแก้ทีละแถว ไม่ rebuild ทั้งตาราง)
+    if(z.contractSize!=null) win.onMasterSizeChange(z.contractSize);
+  }
+
+  // สำรอง: ใช้เมื่อยังไม่ได้ตั้ง Claude API key — จับคำตายตัวแบบเดิม
+  _handleVoiceCommandLocal(text){
+    const t = (text||'').toLowerCase();
+
+    // สั่งกลับไปหน้าหลักของ TAWEE ด้วยเสียง/พิมพ์
+    // "กลับ" เพียงคำเดียวก็พอ — STT ไทยมักฟังคำท้ายๆ อย่าง "หน้าหลัก"/"โรส" ไม่ชัด (เช่นฟังเป็น "กลับไปน่า")
+    if(/กลับ|หน้าหลัก/.test(t)){
+      this.setState({voiceMsg:'กำลังกลับไปหน้าหลัก TAWEE ค่ะ'});
+      this.speak('กำลังกลับไปหน้าหลัก TAWEE ค่ะ');
+      setTimeout(()=>{ window.location.href='../index.html'; }, 900);
+      return;
+    }
+
+    // สั่งเปิด/ปิดเครื่องมือ (Payoff Chart / Option Planning) ด้วยเสียง/พิมพ์ — กันคำเพี้ยนจาก STT
+    const PAYOFF_RE = /payoff|pay\s*off|เพย์ออฟ|เปย์ออฟ|เพลย์ออฟ/i;
+    const PLANNING_RE = /planning|แพลนนิ่ง|แพลนนิง|วางแผน|grid/i;
+    const BOARD_RE = /กระดาน\s*options|กระดานออปชัน|เครื่องมือ/i;
+    if(/เปิด/.test(t) && PLANNING_RE.test(t)){
+      this.setState({activeBoard:'planning', voiceMsg:'เปิด Option Planning ให้แล้วค่ะ'});
+      this.speak('เปิด Option Planning ให้แล้วค่ะ');
+      return;
+    }
+    if(/เปิด/.test(t) && (PAYOFF_RE.test(t) || BOARD_RE.test(t))){
+      this.setState({activeBoard:'payoff', voiceMsg:'เปิด Payoff Chart ให้แล้วค่ะ'});
+      this.speak('เปิด Payoff Chart ให้แล้วค่ะ');
+      return;
+    }
+    if(/ปิด/.test(t) && (PAYOFF_RE.test(t) || PLANNING_RE.test(t) || BOARD_RE.test(t))){
+      this.setState({activeBoard:null, boardFullscreen:false, voiceMsg:'ปิดเครื่องมือแล้วค่ะ'});
+      this.speak('ปิดเครื่องมือแล้วค่ะ');
+      this._afterLayout(()=>this._mountChartForSymbol());
+      return;
+    }
+
+    // สั่งขยาย/ย่อเต็มจอด้วยเสียง (ใช้ได้เฉพาะตอนมี Payoff Chart / Option Planning เปิดอยู่)
+    const EXPAND_RE = /ขยายเต็มจอ|ขยายจอ|เต็มจอ|ขยายหน้าจอ/i;
+    const COLLAPSE_RE = /ย่อจอ|ย่อหน้าจอ|ออกจากเต็มจอ|ย่อเต็มจอ/i;
+    if(COLLAPSE_RE.test(t)){
+      this.setState({boardFullscreen:false, voiceMsg:'ย่อกลับแล้วค่ะ'});
+      this.speak('ย่อกลับแล้วค่ะ');
+      return;
+    }
+    if(EXPAND_RE.test(t)){
+      if(this.state.activeBoard){
+        this.setState({boardFullscreen:true, voiceMsg:'ขยายเต็มจอให้แล้วค่ะ'});
+        this.speak('ขยายเต็มจอให้แล้วค่ะ');
+      } else {
+        this.setState({voiceMsg:'ต้องเปิด Payoff Chart หรือ Option Planning ก่อนถึงจะขยายเต็มจอได้ค่ะ'});
+        this.speak('ต้องเปิด Payoff Chart หรือ Option Planning ก่อนนะคะ');
+      }
+      return;
+    }
+
+    const map = [
+      {sym:'NVDA', kw:['nvda','เอ็นวิเดีย','เอนวิเดีย','nvidia']},
+      {sym:'TSLA', kw:['tsla','เทสล่า','tesla']},
+      {sym:'AAPL', kw:['aapl','แอปเปิล','apple']},
+      {sym:'MSFT', kw:['msft','ไมโครซอฟท์','ไมโครซอฟต์','microsoft']},
+      {sym:'GOOGL',kw:['googl','กูเกิล','google','อัลฟาเบท','alphabet']},
+      {sym:'AMZN', kw:['amzn','อเมซอน','แอมะซอน','amazon']},
+      {sym:'META', kw:['meta','เมต้า','เฟซบุ๊ก','facebook']},
+      {sym:'AMD',  kw:['amd']},
+      {sym:'NFLX', kw:['nflx','เน็ตฟลิกซ์','netflix']},
+      {sym:'JPM',  kw:['jpm','เจพีมอร์แกน','jpmorgan']},
+      {sym:'V',    kw:['วีซ่า','visa']},
+      {sym:'WMT',  kw:['wmt','วอลมาร์ท','walmart']},
+      {sym:'DIS',  kw:['dis','ดิสนีย์','disney']},
+      {sym:'BA',   kw:['โบอิ้ง','boeing']},
+      {sym:'COIN', kw:['coin','คอยน์เบส','coinbase']},
+      {sym:'PLTR', kw:['pltr','พาแลนเทียร์','palantir']},
+      {sym:'BTC',  kw:['btc','บิทคอยน์','บิตคอยน์','bitcoin']},
+      {sym:'ETH',  kw:['eth','อีเธอเรียม','อีเธอเรี่ยม','ethereum']},
+      {sym:'XAU',  kw:['xau','ทองคำ','gold','ทอง']},
+      {sym:'SET',  kw:['set','เซ็ต']},
+    ];
+    const wantsAnalysis = /วิเคราะห์|analy[sz]e|เทรนด์|แนวโน้ม/.test(t);
+    let matched=null;
+    for(const m of map){ if(m.kw.some(k=>t.includes(k))){ matched=m.sym; break; } }
+    const sym = matched || (wantsAnalysis ? this.state.analystSymbol : null);
+
+    if(sym){
+      this.setAnalystSymbol(sym);
+      if(wantsAnalysis){
+        this.setState({voiceMsg:`กำลังวิเคราะห์ ${sym} — ดูข้อมูลหุ้นที่แผงขวา`});
+        this.speak(`กำลังวิเคราะห์ ${sym} ดูราคาและสถิติสำคัญได้ที่แผงด้านขวาค่ะ`);
+      } else {
+        this.setState({voiceMsg:`กำลังแสดงกราฟ ${sym} จาก TradingView`});
+        this.speak(`แสดงกราฟ ${sym} จาก TradingView`);
+      }
+    } else {
+      this.setState({voiceMsg:'คุณพูดว่า: "'+text+'" — ถ้าไมค์ฟังผิดบ่อย ลองพิมพ์ในช่องข้อความแทนได้ค่ะ'});
+    }
+  }
+
+  // พิมพ์คำสั่งแทนเสียงได้ — ใช้ logic เดียวกับ handleVoiceCommand
+  submitText(){
+    const el = this.textInputRef.current;
+    const text = (el && el.value || '').trim();
+    if(!text) return;
+    this.handleVoiceCommand(text);
+    if(el) el.value = '';
+  }
+
+  onTextKeyDown(e){
+    if(e.key === 'Enter') this.submitText();
+  }
+
+  speak(text){
+    if(window.speakSoniox) window.speakSoniox(text);
+  }
+
+  switchAgent(id){
+    this.setState({activeAgent:id});
+    if(id==='analyst') this._afterLayout(()=>{ this._mountChartForSymbol(); });
+  }
+
+  pickColor(idx){ this.setState({themeIdx:idx}); saveSharedTheme(idx); }
+
+  renderVals(){
+    const {activeAgent,themeIdx,optionsData,systemMetrics,time,
+      analystSymbol,voiceListening,voiceMsg,activeBoard,boardFullscreen,
+      swingLoading,swingHasData,swingUnsupported,swingData}=this.state;
+    const agent=this.agents[activeAgent];
+
+    // มุมขวาล่าง: สัญญาณ Swing Trade
+    const fmtSwingPrice=(n)=> n==null ? '--' : n.toLocaleString('en-US',{maximumFractionDigits:n<10?4:2});
+    const fmtOI=(n)=> n==null ? '--' : n.toLocaleString('en-US',{maximumFractionDigits:0});
+    const swingInCC = !!(swingData && swingData.inCC);
+    const swingBadgeText = swingData ? (swingInCC ? '● Cover Call Zone' : '○ นอกโซน / รอสัญญาณ') : '';
+    const swingBadgeStyle = {
+      display:'inline-block', padding:'5px 11px', borderRadius:'20px',
+      fontSize:'11px', fontWeight:700, fontFamily:"'Space Grotesk',sans-serif",
+      color: swingInCC ? '#10b981' : '#9d6ef5',
+      background: swingInCC ? 'rgba(16,185,129,0.14)' : 'rgba(157,110,245,0.14)',
+      border: `1px solid ${swingInCC ? 'rgba(16,185,129,0.4)' : 'rgba(157,110,245,0.4)'}`,
+    };
+    const swingSignalDetail = swingData
+      ? (swingData.lastSignal
+          ? `สัญญาณล่าสุด: ${swingData.lastSignal==='buy'?'ซื้อ (เข้าโซน)':'ขาย (ออกโซน)'} — ${swingData.barsAgo} วันก่อน`
+          : 'ยังไม่มีสัญญาณครบเงื่อนไขในช่วงข้อมูลนี้')
+      : '';
+    const swingResistanceList = swingData && swingData.resistances
+      ? swingData.resistances.map(r=>({ strikeStr: fmtSwingPrice(r.strike), oiStr: `Call OI ${fmtOI(r.call)} ${analystSymbol}` }))
+      : [];
+    const swingSupportList = swingData && swingData.supports
+      ? swingData.supports.map(s=>({ strikeStr: fmtSwingPrice(s.strike), oiStr: `Put OI ${fmtOI(s.put)} ${analystSymbol}` }))
+      : [];
+    const swingOIStr = swingData ? fmtOI(swingData.oi) + ' ' + analystSymbol : '--';
+    const swingPCRStr = swingData && swingData.putCallRatio!=null ? swingData.putCallRatio.toFixed(2) : '--';
+    const swingPriceStr = swingData ? fmtSwingPrice(swingData.price) : '--';
+
+    // Options
+    const fmtChain=optionsData.chain.map(row=>({
+      strikeStr:row.strike.toString(),
+      callOIStr:(row.callOI/1000).toFixed(1)+'k',
+      putOIStr:(row.putOI/1000).toFixed(1)+'k',
+      callIVStr:row.callIV.toFixed(1)+'%',
+      putIVStr:row.putIV.toFixed(1)+'%',
+      callDeltaStr:row.callDelta.toFixed(2),
+      putDeltaStr:row.putDelta.toFixed(2),
+      wrapStyle:{
+        display:'grid', gridTemplateColumns:'1fr auto 1fr',
+        alignItems:'center', gap:'4px',
+        padding:row.atm?'7px 8px':'5px 8px',
+        borderRadius:'6px', marginBottom:'3px',
+        background:row.atm?'rgba(139,92,246,0.12)':'rgba(255,255,255,0.02)',
+        border:`1px solid ${row.atm?'rgba(139,92,246,0.3)':'rgba(255,255,255,0.05)'}`,
+      },
+    }));
+    const greeks={
+      delta:optionsData.greeks.delta.toFixed(2),
+      gamma:optionsData.greeks.gamma.toFixed(3),
+      theta:optionsData.greeks.theta.toFixed(2),
+      vega:optionsData.greeks.vega.toFixed(2),
+    };
+    const fmtOD={
+      ...optionsData,
+      ivStr:optionsData.iv.toFixed(1)+'%',
+      pcrStr:optionsData.pcr.toFixed(2),
+      maxPainStr:optionsData.maxPain.toLocaleString(),
+      ivBar:Math.round(Math.min(optionsData.iv/40,1)*100)+'%',
+      pcrBar:Math.round(Math.min(optionsData.pcr/2,1)*100)+'%',
+    };
+
+    // System
+    const cpu=Math.round(systemMetrics.cpu), mem=Math.round(systemMetrics.mem);
+    const cpuColor=cpu>80?'#f43f5e':cpu>60?'#f59e0b':'#10b981';
+    const memColor=mem>75?'#f43f5e':mem>60?'#f59e0b':'#10b981';
+
+    // Tab styles — fixed neutral color, no agent-color change
+    const tabStyle=(id)=>{
+      const active=activeAgent===id;
+      return{display:'flex',alignItems:'center',gap:'7px',padding:'6px 13px',borderRadius:'7px',cursor:'pointer',
+        background:active?'rgba(255,255,255,0.09)':'transparent',
+        color:active?'rgba(255,255,255,0.9)':'rgba(255,255,255,0.32)',
+        border:`1px solid ${active?'rgba(255,255,255,0.15)':'transparent'}`,
+        fontSize:'13px',fontFamily:"'Sarabun',sans-serif",fontWeight:active?600:400,
+        transition:'all 0.22s',whiteSpace:'nowrap'};
+    };
+
+    // HUD brackets
+    const bStyle=(pos)=>{
+      const base={position:'absolute',width:'26px',height:'26px',pointerEvents:'none',animation:'bracketPulse 3s ease-in-out infinite',transition:'border-color 0.8s'};
+      const bC=`1.5px solid ${agent.hex}`;
+      if(pos==='tl') return{...base,top:'14px',left:'14px',borderTop:bC,borderLeft:bC};
+      if(pos==='tr') return{...base,top:'14px',right:'14px',borderTop:bC,borderRight:bC};
+      if(pos==='bl') return{...base,bottom:'14px',left:'14px',borderBottom:bC,borderLeft:bC};
+      return{...base,bottom:'14px',right:'14px',borderBottom:bC,borderRight:bC};
+    };
+
+    // Dot styles
+    const dotStyle=(i)=>{
+      const p=this.PALETTE[i];
+      const active=themeIdx===i;
+      return{
+        width: active?'12px':'8px', height: active?'12px':'8px',
+        borderRadius:'50%', background:p.hex,
+        boxShadow:`0 0 ${active?14:6}px ${p.hex}`,
+        cursor:'pointer', transition:'all 0.22s',
+        border: active?`2px solid rgba(255,255,255,0.6)`:'none',
+        flexShrink:0,
+      };
+    };
+
+    const timeStr=time.toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const dateStr=time.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+    // ── นักวิเคราะห์: symbol picker + voice UI (กราฟจริงมาจาก TradingView widget) ──
+    const symBtnStyle=(sym)=>{
+      const active=analystSymbol===sym;
+      return{padding:'5px 11px',borderRadius:'6px',cursor:'pointer',
+        fontSize:'11px',fontFamily:"'Space Grotesk',sans-serif",fontWeight:active?700:500,
+        background:active?'rgba(59,130,246,0.18)':'rgba(255,255,255,0.04)',
+        color:active?'#60a5fa':'rgba(255,255,255,0.5)',
+        border:`1px solid ${active?'rgba(59,130,246,0.4)':'rgba(255,255,255,0.08)'}`,
+        transition:'all 0.2s',flexShrink:0};
+    };
+
+    const micStyle={
+      width:'44px',height:'44px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',
+      cursor:'pointer',flexShrink:0,fontSize:'18px',
+      background:voiceListening?'linear-gradient(135deg,#f43f5e,#b91c3c)':'linear-gradient(135deg,#3b82f6,#1e3a8a)',
+      boxShadow:voiceListening?'0 0 22px rgba(244,63,94,0.55)':'0 0 16px rgba(59,130,246,0.4)',
+      animation:voiceListening?'glowPulse 1s ease-in-out infinite':'none',
+      transition:'all 0.25s',
+    };
+
+    const voiceBtnStyle={
+      display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',padding:'10px',borderRadius:'8px',cursor:'pointer',
+      background:voiceListening?'rgba(244,63,94,0.15)':'rgba(59,130,246,0.12)',
+      color:voiceListening?'#f43f5e':'#60a5fa',
+      border:`1px solid ${voiceListening?'rgba(244,63,94,0.35)':'rgba(59,130,246,0.3)'}`,
+      fontSize:'12px',fontWeight:600,fontFamily:"'Sarabun',sans-serif",transition:'all 0.2s',
+    };
+    const voiceBtnLabel=voiceListening?'กำลังฟัง... (แตะเพื่อหยุด)':'สั่งงานด้วยเสียง';
+
+    return{
+      agent, agentHex:agent.hex, activeAgent,
+      fmtChain,
+      optionsData:fmtOD, greeks,
+      systemMetrics,
+      cpuStr:cpu+'%', memStr:mem+'%', cpuW:cpu+'%', memW:mem+'%', cpuColor, memColor,
+      timeStr, dateStr,
+      analystTabStyle:tabStyle('analyst'),
+      optionsTabStyle:tabStyle('options'),
+      systemTabStyle:tabStyle('system'),
+      analystActive:activeAgent==='analyst',
+      optionsActive:activeAgent==='options',
+      systemActive:activeAgent==='system',
+      orbActive:activeAgent!=='analyst',
+      goToTAWEE:()=>{window.location.href='../index.html';},
+      switchAnalyst:()=>this.switchAgent('analyst'),
+      switchOptions:()=>this.switchAgent('options'),
+      switchSystem:()=>this.switchAgent('system'),
+      pickColor0:()=>this.pickColor(0),
+      pickColor1:()=>this.pickColor(1),
+      pickColor2:()=>this.pickColor(2),
+      pickColor3:()=>this.pickColor(3),
+      pickColor4:()=>this.pickColor(4),
+      dot0Style:dotStyle(0), dot1Style:dotStyle(1),
+      dot2Style:dotStyle(2), dot3Style:dotStyle(3),
+      dot4Style:dotStyle(4),
+      canvasRef:this.canvasRef,
+      marketOverviewRef:this.marketOverviewRef,
+      analystChartRef:this.analystChartRef,
+      lwChartRef:this.lwChartRef,
+      payoffFrameRef:this.payoffFrameRef,
+      planningFrameRef:this.planningFrameRef,
+      useCustomChart: !!this.SWING_DATA_SOURCES[analystSymbol] && !activeBoard,
+      useTVChart: !this.SWING_DATA_SOURCES[analystSymbol] && !activeBoard,
+      // อยู่ในเลย์เอาต์ตลอด แค่สลับ display — ไม่ unmount เพื่อไม่ให้ leg/ค่าที่กรอกไว้ในอีกเครื่องมือหาย
+      // โหมดเต็มจอ: หลุดออกจาก flex layout เดิม ลอยคลุมทั้งหน้าจอด้วย position:fixed แทน
+      payoffPanelStyle: (activeBoard==='payoff' && boardFullscreen)
+        ? { position:'fixed', inset:0, zIndex:999, display:'flex', flexDirection:'column', background:'#0c0c14', border:'none', borderRadius:0 }
+        : { flex:'1', minHeight:0, display: activeBoard==='payoff'?'flex':'none', flexDirection:'column', background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'8px', overflow:'hidden' },
+      planningPanelStyle: (activeBoard==='planning' && boardFullscreen)
+        ? { position:'fixed', inset:0, zIndex:999, display:'flex', flexDirection:'column', background:'#0a0a0f', border:'none', borderRadius:0 }
+        : { flex:'1', minHeight:0, display: activeBoard==='planning'?'flex':'none', flexDirection:'column', background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'8px', overflow:'hidden' },
+      boardFullscreen,
+      boardNotFullscreen: !boardFullscreen,
+      // ปกติ container หลักอยู่ z-index:1 (ต่ำกว่าแถบบนสุด z-index:10) ตอนเต็มจอต้องดันขึ้นเหนือแถบบนสุด
+      // ไม่งั้น position:fixed ของ payoff/planning panel จะถูกแถบ TAWEE AI/FINANCE ด้านบนบังอยู่ (ติดอยู่ใน stacking context เดิม)
+      mainAreaZ: boardFullscreen ? 1000 : 1,
+      toggleBoardFullscreen:()=>this.toggleBoardFullscreen(),
+      openPayoffBoard:()=>this.setState({activeBoard:'payoff'}),
+      openPlanningBoard:()=>this.setState({activeBoard:'planning'}),
+      closeBoard:()=>{
+        this.setState({activeBoard:null, boardFullscreen:false});
+        // ปิดแล้วต้อง mount กราฟใหม่ เพราะ div ของกราฟเพิ่งถูกสร้างใหม่ (ตอนสลับไปกระดาน widget เดิมหายไป)
+        this._afterLayout(()=>this._mountChartForSymbol());
+      },
+      agentOrbRef:this.agentOrbRef,
+      swingLoading, swingHasData, swingUnsupported,
+      swingBadgeText, swingBadgeStyle, swingSignalDetail,
+      swingOIStr, swingPriceStr, swingPCRStr,
+      swingResistanceList, swingSupportList,
+      textInputRef:this.textInputRef,
+      submitText:()=>this.submitText(),
+      onTextKeyDown:(e)=>this.onTextKeyDown(e),
+      agentTasks:agent.tasks,
+      bracketTL:bStyle('tl'),bracketTR:bStyle('tr'),
+      bracketBL:bStyle('bl'),bracketBR:bStyle('br'),
+      analystSymbol,
+      voiceMsg, voiceListening,
+      micStyle, voiceBtnStyle, voiceBtnLabel,
+      toggleVoice:()=>this.toggleVoice(),
+      // ปุ่มเลือกสินทรัพย์ 20 ตัว — คำนวณเป็นลิสต์เดียวแทนการฝัง sym0Style..sym6Style/selectSym0..selectSym6
+      // ทีละตัวแบบเดิม (ตอนมีแค่ 7 ตัวพอไหว แต่ขยายเป็น 20 ตัวต้องวนลูปแทน)
+      symButtons: this.symList.map((sym)=>({ sym, style: symBtnStyle(sym), onClick: ()=>this.setAnalystSymbol(sym) })),
+    };
+  }
+}
+</script>
+</body>
+</html>
