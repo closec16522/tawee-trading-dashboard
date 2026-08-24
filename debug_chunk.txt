@@ -1,0 +1,21 @@
+lass="ds" style="color:#f5c451">SMC Signal generated: XAUUSD Bullish FVG Sweep</span></div>
+                    <div class="act"><span class="ti">20:30</span><span class="ds" style="color:#4aa3ff">LLM news review finished: USD Index impact low</span></div>
+                  </div>
+                </div>
+                <div class="panel">
+                  <div class="rh"><h3>System Alerts</h3></div>
+                  <div class="alert"><span>✅</span><div><b id="alert-title">AUTO-TRADE ARMED</b><div style="color:#7c889f;font-size:9px;" id="alert-sub">No Alerts</div></div></div>
+                  <div class="robot">🤖</div>
+                </div>
+              </aside>
+            </div>
+
+            <!-- BOTTOM AGENT BAR -->
+            <footer class="agentbar" id="agentbar">
+              <div class="barhead"><div class="t">AI AGENTS</div><div class="c" id="agents-active">7 ACTIVE</div></div>
+            </footer>
+          </div>
+        `;
+      }
+      
+      // 

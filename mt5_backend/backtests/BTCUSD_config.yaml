@@ -1,0 +1,16 @@
+broker:
+  cash: 10000.0
+  commission: 0.0
+data:
+  symbol: BTCUSD
+  start_date: 2026-06-26 19:00
+  end_date: 2026-08-18 13:45
+strategy:
+  class: CrossSMAStrategy
+  params:
+    fast: 10
+    slow: 30
+sizer:
+  type: percent
+  params:
+    percents: 95

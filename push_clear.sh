@@ -1,0 +1,1 @@
+echo NUTza067668141 | sudo -S rm -f /tmp/idx_b64.txt

@@ -1,0 +1,16 @@
+broker:
+  cash: 10000.0
+  commission: 0.0
+data:
+  symbol: XAUUSD-VIP
+  start_date: 2026-06-01 08:00
+  end_date: 2026-08-14 23:45
+strategy:
+  class: CrossSMAStrategy
+  params:
+    fast: 10
+    slow: 30
+sizer:
+  type: percent
+  params:
+    percents: 95

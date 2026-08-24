@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    ports:
+      - "3002:80"
+    restart: always
+    volumes:
+      - .:/usr/share/nginx/html:ro
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token eyJhIjoiZWE2NmJjMzRmNTBmMDZiMzY4YjQ2ZjZmYTgwYjM0MGEiLCJ0IjoiYzU0NWVhYzQtNThhMi00MzAxLTgxODQtYTE5YWNlZTc0Y2M4IiwicyI6Ill6SmtNVGcwTUdZdFl6bGhNaTAwWlRSbUxXRTJOekF0TXpRMVpERTJOek15WVdNMiJ9
+    restart: always
+    network_mode: host

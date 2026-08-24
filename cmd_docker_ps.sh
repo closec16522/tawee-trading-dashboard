@@ -1,0 +1,1 @@
+echo NUTza067668141 | sudo -S docker ps
