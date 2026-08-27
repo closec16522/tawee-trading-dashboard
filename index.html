@@ -5717,8 +5717,8 @@
                 </div>
                 <div class="sec-metric-card">
                   <div class="sec-metric-info">
-                    <span class="sec-metric-label">Today's P/L</span>
-                    <span class="sec-metric-val" id="kpi-today-pl" style="color:${window._kpiAccount && window._kpiAccount.profit < 0 ? '#ef4444' : '#10b981'};">${window._kpiAccount && window._kpiAccount.profit !== undefined ? (window._kpiAccount.profit >= 0 ? "+$" : "-$") + Math.abs(window._kpiAccount.profit).toLocaleString(undefined, {minimumFractionDigits: 2}) : "+$1,250.00"}</span>
+                    <span class="sec-metric-label">กำไรสะสมภายในวัน</span>
+                    <span class="sec-metric-val" id="kpi-today-pl" style="color:${window._kpiAccount && window._kpiAccount.profit < 0 ? '#ef4444' : '#10b981'};">${window._kpiAccount && window._kpiAccount.daily_profit !== undefined ? (window._kpiAccount.daily_profit >= 0 ? "+$" : "-$") + Math.abs(window._kpiAccount.daily_profit).toLocaleString(undefined, {minimumFractionDigits: 2}) : "+$0.00"}</span>
                     <span id="kpi-today-pl-pct" style="font-size:9.5px; color:#10b981;">--% วันนี้</span>
                   </div>
                   <span class="sec-metric-icon">💵</span>

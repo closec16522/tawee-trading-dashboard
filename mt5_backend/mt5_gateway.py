@@ -200,7 +200,7 @@ async def broadcast_mt5_data():
                             deal_time = datetime.datetime.fromtimestamp(d.time)
                             if deal_time.date() == now.date():
                                 acc_dict["trades_today"] += 1
-                                acc_dict["daily_profit"] += d.profit
+                                acc_dict["daily_profit"] += (d.profit + getattr(d, "swap", 0) + getattr(d, "commission", 0))
                                 if d.profit > 0:
                                     acc_dict["wins_today"] += 1
                                 
