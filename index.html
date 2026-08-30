@@ -2697,6 +2697,26 @@
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
     
     <script>
+
+window.getGwConfig = function() {
+    const qp = new URLSearchParams(window.location.search);
+    let host = qp.get('gw') || localStorage.getItem('gw_server_ip') || (window.location.hostname !== 'closec16522.github.io' ? window.location.hostname : '192.168.0.11');
+    host = host.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    
+    const isHttps = window.location.protocol === 'https:' || host.includes('trycloudflare') || host.includes('cloudflare');
+    const wsProto = isHttps ? 'wss://' : 'ws://';
+    const httpProto = isHttps ? 'https://' : 'http://';
+    
+    const portSuffix = (host.includes(':') || host.includes('.')) ? (host.includes(':') ? '' : ':19000') : ':19000';
+    
+    return {
+        host: host,
+        isHttps: isHttps,
+        wsUrl: `${wsProto}${host}${portSuffix}/ws`,
+        apiBase: `${httpProto}${host}${portSuffix}`
+    };
+};
+
 window.getGwHost = function() {
     const qp = new URLSearchParams(window.location.search);
     return qp.get('gw') || localStorage.getItem('gw_server_ip') || (window.location.hostname !== 'closec16522.github.io' ? window.location.hostname : '192.168.0.11');
@@ -7157,7 +7177,7 @@ window.getGwHost = function() {
         
         try {
             const qp = new URLSearchParams(window.location.search); const host = getGwHost();
-            const res = await fetch(`http://${host}:19000/api/export_research_data`);
+            const res = await fetch(`${window.getGwConfig().apiBase}/api/export_research_data`);
             if (res.ok) {
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
@@ -8065,7 +8085,7 @@ window.getGwHost = function() {
           result.style.display = 'none';
           
           const gwUrl = new URLSearchParams(window.location.search).get('gw') || getGwHost();
-          const apiUrl = `http://${gwUrl}:19000/api/longterm_analyze`;
+          const apiUrl = `${window.getGwConfig().apiBase}/api/longterm_analyze`;
           
           const tgChatId = localStorage.getItem('notify_tg_chat_id_longterm') || '';
           
@@ -8495,7 +8515,7 @@ window.getGwHost = function() {
       function initNewsLogic() {
         const fetchNews = async () => {
             try {
-                const res = await fetch(`http://${host}:19000/api/news_status`);
+                const res = await fetch(`${window.getGwConfig().apiBase}/api/news_status`);
                 if(res.ok) {
                     const data = await res.json();
                     
@@ -8612,7 +8632,7 @@ window.getGwHost = function() {
         cv.height = 200;
         
         const gwUrl = new URLSearchParams(window.location.search).get('gw') || getGwHost();
-        fetch(`http://${gwUrl}:19000/api/track_record`)
+        fetch(`${window.getGwConfig().apiBase}/api/track_record`)
           .then(res => res.json())
           .then(data => {
             const elTR = document.getElementById('tr-total-return');
@@ -8868,7 +8888,7 @@ function getAnalyticsHTML() {
             const host = qp.get("gw") || getGwHost();
             
             // Fetch real track record for Gemini
-            const trRes = await fetch(`http://${host}:19000/api/track_record`);
+            const trRes = await fetch(`${window.getGwConfig().apiBase}/api/track_record`);
             if (trRes.ok) {
                 const trData = await trRes.json();
                 document.getElementById("stat-gemini-winrate").innerText = trData.win_rate.toFixed(1) + "%";
@@ -8880,7 +8900,7 @@ function getAnalyticsHTML() {
             }
 
             // Fetch signals for simulated (Ollama)
-            const res = await fetch(`http://${host}:19000/api/signals?t=${Date.now()}`);
+            const res = await fetch(`${window.getGwConfig().apiBase}/api/signals?t=${Date.now()}`);
             if (res.ok) {
                 const data = await res.json();
                 const signals = data.signals || [];
@@ -9319,7 +9339,7 @@ function getAnalyticsHTML() {
 
       function initSettingsLogic() {
         // Fetch current trading settings
-        fetch(`http://${host}:19000/api/trading_settings?t=${Date.now()}`)
+        fetch(`${window.getGwConfig().apiBase}/api/trading_settings?t=${Date.now()}`)
           .then(res => res.json())
           .then(data => {
              if (data.allowed_grades) {
@@ -9359,7 +9379,7 @@ function getAnalyticsHTML() {
             if(gradeB) allowed.push('B');
             if(gradeC) allowed.push('C');
             
-            fetch(`http://${host}:19000/api/trading_settings`, {
+            fetch(`${window.getGwConfig().apiBase}/api/trading_settings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -9394,8 +9414,7 @@ function getAnalyticsHTML() {
 
       // --- MT5 WebSockets Integration ---
       const queryParams = new URLSearchParams(window.location.search);
-      const host = queryParams.get("gw") || getGwHost();
-      const wsUrl = `ws://${host}:19000/ws`;
+      const gwCfg = window.getGwConfig(); const host = gwCfg.host; const wsUrl = gwCfg.wsUrl;
       const connectMT5Gateway = () => {
         const ws = new WebSocket(wsUrl);
         const logContainer = document.getElementById("live-log-container");
@@ -10118,7 +10137,7 @@ const wr30dEl = document.getElementById("kpi-winrate");
           if(!confirm("⚠️ ยืนยันการปิดทุกออเดอร์ (Panic Close)?")) return;
           try {
               const host = new URLSearchParams(window.location.search).get('gw') || getGwHost();
-              const res = await fetch(`http://${host}:19000/api/close_all`, {
+              const res = await fetch(`${window.getGwConfig().apiBase}/api/close_all`, {
                   method: 'POST'
               });
               if(res.ok) {
@@ -10146,7 +10165,7 @@ const wr30dEl = document.getElementById("kpi-winrate");
           term.innerHTML = "[System] Starting AI Optimization Process in backend...\n";
           
           const host = new URLSearchParams(window.location.search).get('gw') || getGwHost();
-          fetch(`http://${host}:19000/api/backtest/run`, { method: 'POST' })
+          fetch(`${window.getGwConfig().apiBase}/api/backtest/run`, { method: 'POST' })
           .then(res => res.json())
           .then(data => {
               console.log('Backtest triggered:', data);
@@ -10156,7 +10175,7 @@ const wr30dEl = document.getElementById("kpi-winrate");
           // Poll logs
           if(window.backtestLogInterval) clearInterval(window.backtestLogInterval);
           window.backtestLogInterval = setInterval(() => {
-              fetch(`http://${host}:19000/api/backtest/logs`)
+              fetch(`${window.getGwConfig().apiBase}/api/backtest/logs`)
               .then(res => res.json())
               .then(data => {
                   term.innerHTML = data.logs;
@@ -10176,7 +10195,7 @@ const wr30dEl = document.getElementById("kpi-winrate");
           container.innerHTML = '<div style="color: #3b82f6;">⏳ Fetching latest results...</div>';
           
           const host = new URLSearchParams(window.location.search).get('gw') || getGwHost();
-          fetch(`http://${host}:19000/api/backtest/results`)
+          fetch(`${window.getGwConfig().apiBase}/api/backtest/results`)
           .then(res => res.json())
           .then(data => {
               if(data.error) {
@@ -10255,7 +10274,7 @@ connectMT5Gateway();
 // --- 🚀 INSTANT JOURNAL LOAD (Phase 1 Fix) ---
 setTimeout(() => {
     const apiHost = new URLSearchParams(window.location.search).get('gw') || getGwHost();
-    fetch(`http://${apiHost}:19000/api/signal_history`)
+    fetch(`${window.getGwConfig().apiBase}/api/signal_history`)
         .then(res => res.json())
         .then(data => {
             if (data && data.length > 0) {
@@ -10400,7 +10419,7 @@ function startAiTraining() {
       }
 
 function pollTrainingStatus() {
-    fetch(`http://${host}:19000/api/training/status`)
+    fetch(`${window.getGwConfig().apiBase}/api/training/status`)
         .then(res => res.json())
         .then(data => {
             // Check if user is still on the training tab
