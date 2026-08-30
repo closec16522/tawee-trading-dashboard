@@ -6,6 +6,17 @@
     "gemini_api_key": "",
     "openai_api_key": "",
     "claude_api_key": "",
-    "model_engine": "antigravity",
-    "paper_trading": "false"
+    "model_engine": "hybrid",
+    "paper_trading": "false",
+    "agent_engines": {
+        "market_analyst": "ollama",
+        "smc_strategist": "ollama",
+        "trade_researcher": "ollama",
+        "news_analyst": "antigravity",
+        "supervisor": "antigravity",
+        "risk_manager": "local_engine",
+        "portfolio_manager": "local_engine",
+        "trade_executor": "local_engine",
+        "coin_hunter": "local_engine"
+    }
 }

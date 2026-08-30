@@ -1,5 +1,5 @@
 {
-    "ai_provider": "antigravity",
+    "ai_provider": "hybrid",
     "local_ai_url": "http://localhost:11434/api/generate",
     "local_ai_model": "llama3.1",
     "gemini_api_key": "",
@@ -15,5 +15,5 @@
     "telegram_bot_token": "8899582441:AAFVy4Ab23ilqcO1BBue5zo18RbmmJAVAAI",
     "telegram_chat_id": "1828172350",
     "agent_telegram_chat_id": "-1003409791901",
-    "model_engine": "antigravity"
+    "model_engine": "hybrid"
 }
