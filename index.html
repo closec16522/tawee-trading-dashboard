@@ -2697,6 +2697,11 @@
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
     
     <script>
+window.getGwHost = function() {
+    const qp = new URLSearchParams(window.location.search);
+    return qp.get('gw') || localStorage.getItem('gw_server_ip') || (window.location.hostname !== 'closec16522.github.io' ? window.location.hostname : '192.168.0.11');
+};
+
       // Navigation state
       let activeTab = 'dashboard'; // Dashboard active by default
       let activeLang = 'TH'; // Defaults to Thai language context
