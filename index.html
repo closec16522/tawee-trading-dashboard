@@ -4087,15 +4087,14 @@
 
         // Global Agents Dataset with Agent-Pixels Character PNG Avatars
         let agentsData = [
-          { key: 'market_analyst', name: 'MARKET ANALYST', level: 18, status: 'Analysing', eff: 93, border: '#3b82f6', charId: 17, skill: 'Scanning Market Supply/Demand & Liquidity Swings' },
-    { key: 'coin_hunter', name: 'COIN HUNTER AI', level: 15, status: 'Scanning Coins', eff: 95, border: '#34d6e6', charId: 35, skill: 'Auto Volatility Screener & Dynamic Coin Discovery' },
-          { key: 'news_analyst', name: 'NEWS ANALYST', level: 5, status: 'Checking News', eff: 88, border: '#ec4899', charId: 21, skill: 'GLM-5.2 Real-time News Impact & Sentiment' },
-          { key: 'smc_strategy', name: 'SMC STRATEGIST', level: 11, status: 'Building Setup', eff: 94, border: '#3b82f6', charId: 29, skill: 'Smart Money Concepts & Fib 0.618 OTE Setups' },
-          { key: 'risk_manager', name: 'RISK MANAGER', level: 10, status: 'Calculating Risk', eff: 91, border: '#f59e0b', charId: 26, skill: 'Dynamic Lot Calculation & Max 1% Equity Risk' },
-          { key: 'trade_executor', name: 'TRADE EXECUTOR', level: 11, status: 'Executing', eff: 96, border: '#10b981', charId: 54, skill: 'MT5 High-Speed Order Routing & Trailing Stop' },
-          { key: 'portfolio_manager', name: 'PORTFOLIO MANAGER', level: 9, status: 'Monitoring', eff: 89, border: '#8b5cf6', charId: 57, skill: 'Asset Balance & Floating P/L Margin Protection' },
-          { key: 'supervisor', name: 'SUPERVISOR AI', level: 12, status: 'Reviewing', eff: 97, border: '#8b5cf6', charId: 1, skill: 'Multi-Agent Consensus & Execution Approval' },
-          { key: 'char_picker', name: 'CHARACTER PICKER', level: 99, status: 'Wandering', eff: 100, border: '#eab308', charId: 77, skill: 'Wandering around the office' }
+          { key: 'market_analyst', name: 'MARKET ANALYST', level: 18, xp: 14850, maxXp: 15000, status: 'Analysing', eff: 96, border: '#3b82f6', charId: 17, engine: 'Antigravity CLI', skill: 'Scanning Market Supply/Demand & Liquidity Swings', stats: { insight: 96, accuracy: 94, speed: 92, safety: 95 } },
+          { key: 'coin_hunter', name: 'COIN HUNTER AI', level: 15, xp: 12400, maxXp: 13000, status: 'Scanning Coins', eff: 98, border: '#34d6e6', charId: 35, engine: 'Antigravity CLI', skill: 'Auto Volatility Screener & Dynamic Coin Discovery', stats: { insight: 98, accuracy: 95, speed: 97, safety: 94 } },
+          { key: 'news_analyst', name: 'NEWS ANALYST', level: 8, xp: 7200, maxXp: 8000, status: 'Checking News', eff: 92, border: '#ec4899', charId: 21, engine: 'Antigravity CLI', skill: 'Real-time News Impact & Macro Sentiment', stats: { insight: 92, accuracy: 90, speed: 95, safety: 93 } },
+          { key: 'smc_strategy', name: 'SMC STRATEGIST', level: 14, xp: 13100, maxXp: 14000, status: 'Building Setup', eff: 97, border: '#3b82f6', charId: 29, engine: 'Antigravity CLI', skill: 'Smart Money Concepts & Fib 0.618 OTE Setups', stats: { insight: 97, accuracy: 96, speed: 93, safety: 96 } },
+          { key: 'risk_manager', name: 'RISK MANAGER', level: 30, xp: 29800, maxXp: 30000, status: 'Calculating Risk', eff: 99, border: '#f59e0b', charId: 26, engine: 'Antigravity Engine', skill: 'Dynamic Lot Calculation & Max 1% Equity Risk', stats: { insight: 95, accuracy: 98, speed: 96, safety: 99 } },
+          { key: 'trade_executor', name: 'TRADE EXECUTOR', level: 12, xp: 11500, maxXp: 12000, status: 'Executing', eff: 99, border: '#10b981', charId: 54, engine: 'MT5 C-Bindings', skill: 'MT5 High-Speed Order Routing & Trailing Stop', stats: { insight: 94, accuracy: 98, speed: 99, safety: 97 } },
+          { key: 'portfolio_manager', name: 'PORTFOLIO MANAGER', level: 10, xp: 9500, maxXp: 10000, status: 'Monitoring', eff: 94, border: '#8b5cf6', charId: 57, engine: 'Antigravity Engine', skill: 'Asset Balance & Floating P/L Margin Protection', stats: { insight: 94, accuracy: 93, speed: 91, safety: 98 } },
+          { key: 'supervisor', name: 'SUPERVISOR AI (CEO)', level: 16, xp: 15800, maxXp: 16000, status: 'Reviewing', eff: 99, border: '#8b5cf6', charId: 1, engine: 'Antigravity CLI (CEO)', skill: 'Multi-Agent Consensus & Execution Approval', stats: { insight: 99, accuracy: 98, speed: 96, safety: 99 } }
         ];
 
         // Render AgentBar Cards & Add Agent Button
@@ -4114,18 +4113,24 @@
             
             <div class="agent-cards-row">
               ${agentsData.map(a => `
-                <div class="agent-card-mini" data-key="${a.key}" style="border-top: 3px solid ${a.border}; min-width:160px; max-width:170px; background:#0f172a; border-radius:8px; padding:8px 10px; cursor:pointer; flex-shrink:0; box-shadow:0 4px 10px rgba(0,0,0,0.3);">
+                <div class="agent-card-mini" data-key="${a.key}" style="border-top: 3px solid ${a.border}; min-width:180px; max-width:190px; background:#0f172a; border-radius:8px; padding:8px 10px; cursor:pointer; flex-shrink:0; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
                   <div class="agent-mini-top" style="display:flex; align-items:center; gap:10px;">
-                    <div style="width:32px; height:38px; overflow:hidden; background:#020617; border:1px solid rgba(255,255,255,0.15); border-radius:6px; flex-shrink:0; position:relative;">
+                    <div style="width:34px; height:40px; overflow:hidden; background:#020617; border:1px solid rgba(255,255,255,0.15); border-radius:6px; flex-shrink:0; position:relative;">
                       <img src="assets/characters/char_${a.charId}.png" style="width:112px; height:96px; max-width:none; position:absolute; top:2px; left:-8px; image-rendering:pixelated;" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${a.charId}';" />
                     </div>
                     <div class="agent-mini-info" style="min-width:0; flex:1;">
                       <div class="agent-mini-name" style="font-size:10.5px; font-weight:800; color:#f8fafc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.name}</div>
-                      <div class="agent-mini-level" style="font-size:8.5px; color:#94a3b8; margin-top:1px;">Lv. ${a.level}</div>
-                      <div class="agent-mini-status" style="font-size:8px; color:#38bdf8; margin-top:1px;">🟢 ${a.status}</div>
+                      <div style="display:flex; justify-content:space-between; font-size:8.5px; color:#38bdf8; font-weight:700; margin-top:1px;">
+                        <span>Lv. ${a.level}</span>
+                        <span style="color:#eab308;">EXP ${Math.round((a.xp/a.maxXp)*100)}%</span>
+                      </div>
+                      <div style="background:#020617; height:4px; border-radius:2px; overflow:hidden; margin-top:2px; border:1px solid rgba(255,255,255,0.05);">
+                        <div style="width:${(a.xp/a.maxXp)*100}%; height:100%; background:linear-gradient(90deg, #3b82f6, #eab308);"></div>
+                      </div>
+                      <div style="font-size:7.5px; color:#10b981; font-weight:700; margin-top:2px;">⚡ ${a.engine || 'Antigravity CLI'}</div>
                     </div>
                   </div>
-                  <div class="agent-mini-eff" style="font-size:8.5px; color:#64748b; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-top:1px solid rgba(255,255,255,0.05); padding-top:4px;" title="${a.skill}">${a.skill}</div>
+                  <div class="agent-mini-eff" style="font-size:8.5px; color:#94a3b8; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-top:1px solid rgba(255,255,255,0.05); padding-top:4px;" title="${a.skill}">${a.skill}</div>
                 </div>
               `).join('')}
             </div>

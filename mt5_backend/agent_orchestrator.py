@@ -231,7 +231,7 @@ def update_agent(agent_id, status, activity=None, color=None):
                 LAST_TG_MSG[agent_id] = tg_msg
                 send_agent_telegram_alert(tg_msg)
                 
-        r = requests.post(f"{GATEWAY_URL}/api/agent_update", json=payload, timeout=2, proxies=LOCAL_PROXIES)
+        r = requests.post(f"{GATEWAY_URL}/api/agent_update", json=payload, timeout=5, proxies=LOCAL_PROXIES)
         if r.status_code != 200:
             print(f"⚠️ Gateway Error: {r.status_code}. (Did you restart start_gateway.bat?)")
     except Exception as e:
@@ -239,7 +239,7 @@ def update_agent(agent_id, status, activity=None, color=None):
 
 def update_system_alert(title, message, level="info"):
     try:
-        r = requests.post(f"{GATEWAY_URL}/api/system_alert", json={"title": title, "message": message, "level": level}, timeout=2, proxies=LOCAL_PROXIES)
+        r = requests.post(f"{GATEWAY_URL}/api/system_alert", json={"title": title, "message": message, "level": level}, timeout=5, proxies=LOCAL_PROXIES)
         if r.status_code != 200:
             print(f"⚠️ Gateway Error: {r.status_code}. (Did you restart start_gateway.bat?)")
     except:
@@ -248,14 +248,14 @@ def update_system_alert(title, message, level="info"):
 def update_market_analysis(symbol, data):
     try:
         payload = {"symbol": symbol, "data": data}
-        r = requests.post(f"{GATEWAY_URL}/api/market_analysis_update", json=payload, timeout=2, proxies=LOCAL_PROXIES)
+        r = requests.post(f"{GATEWAY_URL}/api/market_analysis_update", json=payload, timeout=5, proxies=LOCAL_PROXIES)
     except:
         pass
 
 def update_signals(signals):
     try:
         payload = {"signals": signals}
-        r = requests.post(f"{GATEWAY_URL}/api/signals_update", json=payload, timeout=2, proxies=LOCAL_PROXIES)
+        r = requests.post(f"{GATEWAY_URL}/api/signals_update", json=payload, timeout=5, proxies=LOCAL_PROXIES)
     except:
         pass
 
@@ -620,7 +620,7 @@ def run_news_analyst():
                         pass
                         
                     try:
-                        requests.post(f"{GATEWAY_URL}/api/news_update", json=news_payload, timeout=2, proxies=LOCAL_PROXIES)
+                        requests.post(f"{GATEWAY_URL}/api/news_update", json=news_payload, timeout=5, proxies=LOCAL_PROXIES)
                     except Exception as e:
                         pass
                         
@@ -1631,7 +1631,7 @@ def run_weekly_strategy_review():
     print(f"📊 STRATEGY AI: {summary}")
     
     directive = "Maintain current strategy."
-    if gemini_model:
+    if True: # Local AI / Antigravity CLI Engine
         prompt = f"Our Forex bot trading performance for the past 7 days is: Total Trades={total_trades}, Win Rate={win_rate:.1f}%, Net Profit=${profit:.2f}. If we are taking continuous losses or win rate is below 50%, analyze if the market regime has changed (e.g. trending to ranging) and provide a concise 'Strategy Adjustment Directive' in Thai (e.g. 'ลด Lot ลงครึ่งหนึ่งและเน้นเก็บสั้น', 'ตลาดผันผวนสูง ให้ขยับ SL ให้แคบลง'). If performance is good (profitable), just reply 'ลุยตามระบบเดิมต่อไป'. Keep it under 20 words."
         try:
             res = gemini_model.generate_content(prompt)

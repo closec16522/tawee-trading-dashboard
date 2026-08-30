@@ -6,6 +6,6 @@
     "gemini_api_key": "",
     "openai_api_key": "",
     "claude_api_key": "",
-    "model_engine": "ollama",
+    "model_engine": "antigravity",
     "paper_trading": "false"
 }
