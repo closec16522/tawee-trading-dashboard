@@ -483,7 +483,7 @@ def run_coin_hunter():
     time.sleep(1)
     
     try:
-        import MetaTrader5 as mt5
+        # mt5 is global
         symbols_to_scan = ["XAUUSD", "BTCUSD", "ETHUSD", "EURUSD", "GBPUSD", "USDJPY", "SOLUSD", "ADAUSD"]
         top_movers = []
         
@@ -1077,7 +1077,7 @@ def run_supervisor(lot_size):
             return False, "" # No correlation issue
             
         import pandas as pd
-        import MetaTrader5 as mt5
+        # mt5 is global
         
         rates_new = mt5.copy_rates_from_pos(new_symbol, mt5.TIMEFRAME_H1, 0, 100)
         if rates_new is None or len(rates_new) == 0:
@@ -1345,6 +1345,23 @@ def run_trade_executor(trades, lot):
             
         if result and getattr(result, "retcode", None) == mt5.TRADE_RETCODE_DONE:
             print(f"⚡ TRADE EXECUTOR: Order SUCCESS (Ticket: {result.order})")
+            
+            # Post-entry SL/TP enforcement for ECN brokers
+            ticket_id = getattr(result, "order", 0)
+            if ticket_id > 0 and (sl > 0 or tp > 0):
+                time.sleep(0.5)
+                req_sltp = {
+                    "action": mt5.TRADE_ACTION_SLTP,
+                    "position": ticket_id,
+                    "symbol": symbol,
+                    "sl": float(sl),
+                    "tp": float(tp)
+                }
+                res_sltp = mt5.order_send(req_sltp)
+                if res_sltp and res_sltp.retcode == mt5.TRADE_RETCODE_DONE:
+                    print(f"🛡️ TRADE EXECUTOR: Attached SL={sl:.2f} & TP={tp:.2f} to Ticket #{ticket_id}")
+                else:
+                    print(f"⚠️ TRADE EXECUTOR: Could not attach SL/TP to Ticket #{ticket_id}")
             chart_path = generate_trade_chart(symbol, trade_type, price, sl, tp)
             
             action_icon = "🔵" if trade_type == "BUY" else "🔴"
@@ -1404,6 +1421,10 @@ def run_portfolio_manager():
                     closed_count += 1
             elif pos_type == 1 and trend == "BUY":
                 print(f"💼 PORTFOLIO MANAGER: Closing SELL {symbol} because AI trend is BUY!")
+                if close_position(ticket, symbol, volume, pos_type, pos.profit):
+                    closed_count += 1
+            elif pos.profit >= 5.0: # Auto-take profit if position reaches $5.00+ profit
+                print(f"💰 PORTFOLIO MANAGER: Target Profit reached for {symbol} (#{ticket}) -> Profit: ${pos.profit:.2f}! Closing position...")
                 if close_position(ticket, symbol, volume, pos_type, pos.profit):
                     closed_count += 1
 
