@@ -178,6 +178,9 @@ async def broadcast_mt5_data():
                     "trades_today": 0,
                     "wins_today": 0,
                     "daily_profit": 0.0,
+                    "hourly_profit": 0.0,
+                    "weekly_profit": 0.0,
+                    "hourly_trades": 0,
                     "win_rate": 0.0,
                     "win_rate_30d": stats_30d["win_rate_30d"],
                     "profit_factor_30d": stats_30d["profit_factor_30d"],
@@ -198,9 +201,17 @@ async def broadcast_mt5_data():
                         if d.entry == 1: # Closing deal
                             # only count today for stats
                             deal_time = datetime.datetime.fromtimestamp(d.time)
+                            net_pnl = (d.profit + getattr(d, "swap", 0) + getattr(d, "commission", 0))
+                            acc_dict["weekly_profit"] += net_pnl
+                            
+                            # Hourly Profit (last 3600s)
+                            if (now - deal_time).total_seconds() <= 3600:
+                                acc_dict["hourly_trades"] += 1
+                                acc_dict["hourly_profit"] += net_pnl
+                                
                             if deal_time.date() == now.date():
                                 acc_dict["trades_today"] += 1
-                                acc_dict["daily_profit"] += (d.profit + getattr(d, "swap", 0) + getattr(d, "commission", 0))
+                                acc_dict["daily_profit"] += net_pnl
                                 if d.profit > 0:
                                     acc_dict["wins_today"] += 1
                                 
