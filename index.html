@@ -8804,8 +8804,48 @@ window.getGwHost = function() {
         `;
       }
 function getAnalyticsHTML() {
-        return `
-          <div id="dashboard-root">
+          return `
+<div id="dashboard-root">
+              <!-- REAL-TIME TRACK RECORD & PROFIT BREAKDOWN CARD -->
+              <div class="chart-container-card" style="padding:22px; margin: 0 0 20px 0; background:linear-gradient(135deg, #0b1220, #09182b); border:1px solid #1e293b; border-left:4px solid #10b981;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                  <div>
+                    <h3 style="font-size:16px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+                      <span>📊</span> <span>รายงานผลงานจริง & กำไรสะสม (Real-Time Track Record & Profit Breakdown)</span>
+                    </h3>
+                    <div style="font-size:11px; color:#94a3b8; margin-top:2px;">สรุปผลตอบแทนสะสมรายชั่วโมง รายวัน รายสัปดาห์ และมูลค่าพอร์ตสุทธิเรียลไทม์</div>
+                  </div>
+                  <span style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#10b981; font-weight:800; font-size:11px; padding:4px 12px; border-radius:12px;">
+                    🟢 ข้อมูลสดจาก MT5
+                  </span>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px;">
+                  <div style="background:#060a14; border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px;">
+                    <div style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">⏰ กำไรสะสม 1 ชม. ล่าสุด</div>
+                    <div style="font-size:20px; font-weight:800; color:#10b981; margin-top:6px;" id="tr-hourly-pl">+$0.00</div>
+                    <div style="font-size:9.5px; color:#64748b; margin-top:2px;" id="tr-hourly-sub">0 ไม้ปิดใน 1 ชม.</div>
+                  </div>
+
+                  <div style="background:#060a14; border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px;">
+                    <div style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">📅 กำไรสะสมวันนี้ (Daily P/L)</div>
+                    <div style="font-size:20px; font-weight:800; color:#10b981; margin-top:6px;" id="tr-daily-pl">+$0.00</div>
+                    <div style="font-size:9.5px; color:#64748b; margin-top:2px;" id="tr-daily-sub">0 ไม้ปิดวันนี้</div>
+                  </div>
+
+                  <div style="background:#060a14; border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px;">
+                    <div style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">🗓️ กำไรสะสม 7 วัน (Weekly P/L)</div>
+                    <div style="font-size:20px; font-weight:800; color:#38bdf8; margin-top:6px;" id="tr-weekly-pl">+$0.00</div>
+                    <div style="font-size:9.5px; color:#64748b; margin-top:2px;">สะสมย้อนหลัง 7 วัน</div>
+                  </div>
+
+                  <div style="background:#060a14; border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px;">
+                    <div style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">💼 มูลค่าพอร์ตสุทธิ (Equity)</div>
+                    <div style="font-size:20px; font-weight:800; color:#eab308; margin-top:6px;" id="tr-equity-val">$0.00</div>
+                    <div style="font-size:9.5px; color:#64748b; margin-top:2px;" id="tr-balance-val">Balance: $0.00</div>
+                  </div>
+                </div>
+              </div>
             <header class="dashboard-header">
               <div class="header-title-area">
                 <div class="header-path">MARKETS / RESEARCH ANALYTICS</div>
