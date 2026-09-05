@@ -8,11 +8,11 @@ EA_SETTINGS = {
     "DAILY_PROFIT_LIMIT": 50.0,     
     "DAILY_LOSS_LIMIT": -30.0,      
     "ALLOWED_SESSIONS": [(10, 22)], 
-    "MIN_CONFIDENCE": 80,           
-    "ATR_MULTIPLIER_SL": 1.5,       
-    "ATR_MULTIPLIER_TP": 2.5,       
-    "BREAK_EVEN_POINTS": 300,       
-    "TRAILING_STOP_POINTS": 200,    
+    "MIN_CONFIDENCE": 88,           
+    "ATR_MULTIPLIER_SL": 1.2,       
+    "ATR_MULTIPLIER_TP": 3.0,       
+    "BREAK_EVEN_POINTS": 500,       
+    "TRAILING_STOP_POINTS": 350,    
     # --- 🚀 NEW INSTITUTIONAL SETTINGS ---
     "MAX_DRAWDOWN_PERCENT": 10.0,   # ป้องกันพอร์ตแตก ถ้า Equity ร่วง -10% จากจุดสูงสุด (High Water Mark) บอทจะหยุดทำงาน
     "RISK_PER_TRADE_PERCENT": 1.0   # ความเสี่ยงต่อ 1 ไม้ (เช่น 1% ของพอร์ต) เพื่อใช้คำนวณ Lot Size อัตโนมัติ
