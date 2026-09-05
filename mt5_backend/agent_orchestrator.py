@@ -475,38 +475,72 @@ def analyze_news_with_local_ai(news_text):
     return None
 
 
-# --- 8. COIN HUNTER AI (Auto Coin & Symbol Discovery) ---
+# --- 8. COIN HUNTER AI (Auto Coin & Symbol Discovery Engine) ---
 def run_coin_hunter():
     global SYMBOLS
-    print("🔍 COIN HUNTER AI: Scanning Volatile Coins & Forex Pairs...")
-    update_agent("coin_hunter", "Scanning Coins", "Scanning Market Volatility...", "#34d6e6")
+    print("🔍 COIN HUNTER AI: Auto-Scanning Broker Market for High-Opportunity Pairs...")
+    update_agent("coin_hunter", "Scanning Market", "Auto-Discovering High Volatility Pairs...", "#34d6e6")
     time.sleep(1)
     
     try:
-        # mt5 is global
-        symbols_to_scan = ["XAUUSD", "BTCUSD", "ETHUSD", "EURUSD", "GBPUSD", "USDJPY", "SOLUSD", "ADAUSD"]
-        top_movers = []
+        # 1. Query all symbols from MT5 broker
+        all_symbols = mt5.symbols_get()
+        candidate_symbols = []
         
-        for s in symbols_to_scan:
-            rates = mt5.copy_rates_from_pos(s, mt5.TIMEFRAME_H1, 0, 24)
+        if all_symbols:
+            for s in all_symbols:
+                name = s.name.strip()
+                name_upper = name.upper()
+                # Include Forex, Gold/Metals, Crypto, Indices, Oil
+                if any(k in name_upper for k in ["XAU", "GOLD", "BTC", "ETH", "SOL", "EURUSD", "GBPUSD", "USDJPY", "US30", "NAS100", "OIL"]):
+                    if s.visible or mt5.symbol_select(name, True):
+                        candidate_symbols.append(name)
+        
+        if not candidate_symbols:
+            candidate_symbols = ["XAUUSD", "XAUUSD-VIP", "BTCUSD", "ETHUSD", "EURUSD", "GBPUSD", "USDJPY", "SOLUSD"]
+            
+        top_movers = []
+        # Scan up to 30 candidate pairs
+        for sym in candidate_symbols[:30]:
+            rates = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_H1, 0, 24)
             if rates is not None and len(rates) > 0:
                 import pandas as pd
                 df_c = pd.DataFrame(rates)
                 volatility = ((df_c['high'].max() - df_c['low'].min()) / df_c['close'].iloc[-1]) * 100
-                top_movers.append((s, volatility))
+                top_movers.append((sym, volatility))
                 
         top_movers.sort(key=lambda x: x[1], reverse=True)
-        discovered_symbols = [x[0] for x in top_movers[:4]] if top_movers else ["XAUUSD", "BTCUSD", "ETHUSD"]
+        # Select top 6 volatile/high-opportunity pairs
+        discovered_symbols = [x[0] for x in top_movers[:6]] if top_movers else ["XAUUSD-VIP", "BTCUSD", "EURUSD"]
         
+        # Dynamically auto-add new discovered pairs into active SYMBOLS list
+        added_new = 0
+        for p in discovered_symbols:
+            if p not in SYMBOLS:
+                SYMBOLS.append(p)
+                added_new += 1
+                print(f"🚀 COIN HUNTER AI: Auto-Discovered & Added New Pair -> {p}")
+                
         top_name = discovered_symbols[0] if discovered_symbols else "XAUUSD"
-        print(f"🎯 COIN HUNTER AI: Discovered Top Volatile Coin -> {top_name}")
-        update_agent("coin_hunter", "Discovered", f"Discovered Top Pair: {top_name}", "#34d6e6")
-        time.sleep(1)
+        print(f"🎯 COIN HUNTER AI: Market Auto-Discovery Complete! Active SYMBOLS ({len(SYMBOLS)} Pairs): {SYMBOLS}")
+        update_agent("coin_hunter", "Auto-Discovered", f"Added {top_name} (Total Active: {len(SYMBOLS)} Pairs)", "#34d6e6")
+        
+        # Persist updated symbols list into config.json
+        try:
+            if os.path.exists(MAIN_CONFIG_PATH):
+                with open(MAIN_CONFIG_PATH, "r", encoding="utf-8") as f:
+                    c_data = json.load(f)
+                c_data["symbols"] = SYMBOLS
+                with open(MAIN_CONFIG_PATH, "w", encoding="utf-8") as f:
+                    json.dump(c_data, f, indent=4, ensure_ascii=False)
+        except Exception as json_e:
+            pass
+
         return discovered_symbols
     except Exception as e:
         print("⚠️ COIN HUNTER AI Error:", e)
         update_agent("coin_hunter", "Standby", "Scanning Complete", "#64748b")
-        return ["XAUUSD", "BTCUSD", "ETHUSD"]
+        return SYMBOLS
 
 def run_news_analyst():
     global news_impact, last_news_fetch_time, cached_news_impact
